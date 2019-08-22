@@ -1,7 +1,6 @@
 
-#include "XPLMDisplay.h"
-#include "XPLMGraphics.h"
-#include <string.h>
+#include "XPLMProcessing.h"
+
 #if IBM
 #include <windows.h>
 #endif
@@ -23,12 +22,9 @@ PLUGIN_API int XPluginStart(
     char* outSig,
     char* outDesc)
 {
-    const char* pluginName = "HelloWorld3Plugin";
-    strcpy_s(outName, sizeof(pluginName), pluginName);
-    const char* pluginSig = "xpsdk.examples.helloworld3plugin";
-    strcpy_s(outName, sizeof(pluginSig), pluginSig);
-    const char* pluginDesc = "A Hello World plug-in for the XPLM300 SDK.";
-    strcpy_s(outName, sizeof(pluginDesc), pluginDesc);
+    strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
+    strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
+    strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin for X-Plane");
 
     return true;
 }
