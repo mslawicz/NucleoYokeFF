@@ -72,18 +72,18 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
-    <TargetName>win</TargetName>
-    <OutDir>.\Debug\plugins\$(MSBuildProjectName)\64\</OutDir>
-    <IntDir>.\Debug\64\</IntDir>
+    <TargetName>$(MSBuildProjectName)</TargetName>
+    <OutDir>.\Debug\plugins\$(MSBuildProjectName)\win_x64\</OutDir>
+    <IntDir>.\Debug\win_x64\</IntDir>
     <TargetExt>.xpl</TargetExt>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
-    <TargetName>win</TargetName>
-    <OutDir>.\Release\plugins\$(MSBuildProjectName)\64\</OutDir>
-    <IntDir>.\Release\64\</IntDir>
+    <TargetName>$(MSBuildProjectName)</TargetName>
+    <OutDir>.\Release\plugins\$(MSBuildProjectName)\win_x64\</OutDir>
+    <IntDir>.\Release\win_x64\</IntDir>
     <TargetExt>.xpl</TargetExt>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
