@@ -16,6 +16,8 @@
 #error This is made to be compiled against the XPLM300 SDK
 #endif
 
+XPLMCreateFlightLoop_t flightLoopStructure;
+float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 
 PLUGIN_API int XPluginStart(
     char* outName,
@@ -26,7 +28,7 @@ PLUGIN_API int XPluginStart(
     strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin for X-Plane");
 
-    return true;
+    return 1;
 }
 
 PLUGIN_API void	XPluginStop(void)
@@ -34,6 +36,20 @@ PLUGIN_API void	XPluginStop(void)
 
 }
 
+/* This is called when the plugin is enabled */
+PLUGIN_API int  XPluginEnable(void)
+{
+    flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
+    return 1;
+}
+
+/*This is called when the plugin is disabled */
 PLUGIN_API void XPluginDisable(void) { }
-PLUGIN_API int  XPluginEnable(void) { return 1; }
+
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) { }
+
+float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
+{
+    // this function must return the time in seconds after which it will be called again
+    return 1.0f;
+}
