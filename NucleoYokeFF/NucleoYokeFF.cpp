@@ -17,6 +17,7 @@
 #endif
 
 XPLMCreateFlightLoop_t flightLoopStructure;
+XPLMFlightLoopID flightLoopID;
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 
 PLUGIN_API int XPluginStart(
@@ -40,11 +41,15 @@ PLUGIN_API void	XPluginStop(void)
 PLUGIN_API int  XPluginEnable(void)
 {
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
+    flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     return 1;
 }
 
 /*This is called when the plugin is disabled */
-PLUGIN_API void XPluginDisable(void) { }
+PLUGIN_API void XPluginDisable(void)
+{
+    XPLMDestroyFlightLoop(flightLoopID);
+}
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) { }
 
