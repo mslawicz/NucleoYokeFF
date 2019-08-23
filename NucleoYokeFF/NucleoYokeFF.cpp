@@ -1,5 +1,7 @@
 
 #include "XPLMProcessing.h"
+#include "XPLMDataAccess.h"
+#include <cmath>
 
 #if IBM
 #include <windows.h>
@@ -18,6 +20,9 @@
 
 XPLMCreateFlightLoop_t flightLoopStructure;
 XPLMFlightLoopID flightLoopID;
+static XPLMDataRef testForceRef;  //XXX
+static XPLMDataRef testTransRef;  //XXX
+
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 
 PLUGIN_API int XPluginStart(
@@ -28,6 +33,9 @@ PLUGIN_API int XPluginStart(
     strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
     strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin for X-Plane");
+
+    testForceRef = XPLMFindDataRef("sim/flightmodel/misc/act_frc_roll_lb");
+    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code");
 
     return 1;
 }
@@ -42,6 +50,7 @@ PLUGIN_API int  XPluginEnable(void)
 {
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
+    XPLMScheduleFlightLoop(flightLoopID, 5.0f, 1);
     return 1;
 }
 
@@ -55,6 +64,10 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
-    // this function must return the time in seconds after which it will be called again
-    return 1.0f;
+    // this test reads yoke roll feedback force and set this value to the transponder 
+    float rollForce = XPLMGetDataf(testForceRef);
+    XPLMSetDatai(testTransRef, 2000 + (int)rollForce);
+
+    // returned value >0 means the time in seconds, after which the function is called again
+    return 0.5f;
 }
