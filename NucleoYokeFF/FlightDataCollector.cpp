@@ -1,3 +1,4 @@
+#include "Logger.h"
 #include "FlightDataCollector.h"
 
 bool FlightDataCollector::registerParameter(std::string parameterName)
@@ -12,6 +13,10 @@ bool FlightDataCollector::registerParameter(std::string parameterName)
     {
         simulatorParameters.push_back(newParameter);
         result = true;
+    }
+    else
+    {
+        Logger::logMessage("failed to register parameter " + parameterName);
     }
     return result;
 }

@@ -1,6 +1,7 @@
 
 #include "FlightDataCollector.h"
 #include "YokeInterface.h"
+#include "Logger.h"
 #include <windows.h>
 #include <GL/gl.h>
 
@@ -40,6 +41,7 @@ PLUGIN_API int XPluginStart(
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
 
+    Logger::logMessage("hello :-)");
     testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
 
     if (!registerSuccess)
