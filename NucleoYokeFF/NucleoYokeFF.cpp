@@ -1,18 +1,9 @@
 
-#include "XPLMProcessing.h"
-#include "XPLMDataAccess.h"
+#include "FlightDataCollector.h"
 #include <cmath>
-
-#if IBM
 #include <windows.h>
-#endif
-#if LIN
 #include <GL/gl.h>
-#elif __GNUC__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+
 
 #ifndef XPLM300
 #error This is made to be compiled against the XPLM300 SDK
@@ -23,6 +14,10 @@ XPLMFlightLoopID flightLoopID;
 static XPLMDataRef testForceRef;  //XXX
 static XPLMDataRef testTransRef;  //XXX
 
+// global variables
+FlightDataCollector* pForceFeedbackData = nullptr;
+
+// function declarations
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 
 PLUGIN_API int XPluginStart(
@@ -30,6 +25,7 @@ PLUGIN_API int XPluginStart(
     char* outSig,
     char* outDesc)
 {
+    pForceFeedbackData = new FlightDataCollector;
     strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
     strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin for X-Plane");
@@ -42,7 +38,10 @@ PLUGIN_API int XPluginStart(
 
 PLUGIN_API void	XPluginStop(void)
 {
-
+    if (pForceFeedbackData)
+    {
+        delete pForceFeedbackData;
+    }
 }
 
 /* This is called when the plugin is enabled */
