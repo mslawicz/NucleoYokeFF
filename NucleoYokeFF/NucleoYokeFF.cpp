@@ -1,6 +1,5 @@
 
 #include "FlightDataCollector.h"
-#include <cmath>
 #include <windows.h>
 #include <GL/gl.h>
 
@@ -11,9 +10,9 @@
 
 XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to create a new flight loop callback
 XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
-static XPLMDataRef testForceRef;  //XXX
+
 static XPLMDataRef testTransRef;  //XXX
-uint8_t dataBuffer[64];
+uint8_t dataBuffer[64];//XXX
 
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
@@ -39,7 +38,6 @@ PLUGIN_API int XPluginStart(
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
 
-    testForceRef = XPLMFindDataRef("sim/flightmodel/misc/act_frc_roll_lb"); //XXX
     testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
 
     if (!registerSuccess)
