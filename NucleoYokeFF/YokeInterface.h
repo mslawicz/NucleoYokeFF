@@ -16,7 +16,7 @@ public:
     void open(void);
 private:
     static const size_t SendBufferSize = 64;
-    uint8_t sendBuffer[SendBufferSize];
+    uint8_t sendBuffer[SendBufferSize] = { 0 };
     GUID hidGuid;       // Human Interface Device
 };
 
