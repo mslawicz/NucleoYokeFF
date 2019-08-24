@@ -9,10 +9,11 @@
 #error This is made to be compiled against the XPLM300 SDK
 #endif
 
-XPLMCreateFlightLoop_t flightLoopStructure;
-XPLMFlightLoopID flightLoopID;
+XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to create a new flight loop callback
+XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
 static XPLMDataRef testForceRef;  //XXX
 static XPLMDataRef testTransRef;  //XXX
+uint8_t dataBuffer[64];
 
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
@@ -26,14 +27,26 @@ PLUGIN_API int XPluginStart(
     char* outDesc)
 {
     pForceFeedbackData = new FlightDataCollector;
+
+    // set plugin signature strings
     strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
     strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin for X-Plane");
 
-    testForceRef = XPLMFindDataRef("sim/flightmodel/misc/act_frc_roll_lb");
-    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code");
+    // register simulator parameters
+    bool registerSuccess = true;
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_ptch_lb");
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
 
-    return 1;
+    testForceRef = XPLMFindDataRef("sim/flightmodel/misc/act_frc_roll_lb"); //XXX
+    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
+
+    if (!registerSuccess)
+    {
+        strcpy_s(outDesc, 0xFF, "parameter registration failed");
+    }
+    return (int)registerSuccess;
 }
 
 PLUGIN_API void	XPluginStop(void)
@@ -64,7 +77,8 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
     // this test reads yoke roll feedback force and set this value to the transponder 
-    float rollForce = XPLMGetDataf(testForceRef);
+    pForceFeedbackData->readParameters(dataBuffer);
+    float rollForce = *reinterpret_cast<float*>(dataBuffer+4);
     XPLMSetDatai(testTransRef, 2000 + (int)rollForce);
 
     // returned value >0 means the time in seconds, after which the function is called again
