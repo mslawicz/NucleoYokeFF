@@ -1,5 +1,6 @@
 
 #include "FlightDataCollector.h"
+#include "YokeInterface.h"
 #include <windows.h>
 #include <GL/gl.h>
 
@@ -12,10 +13,10 @@ XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to cr
 XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
 
 static XPLMDataRef testTransRef;  //XXX
-uint8_t dataBuffer[64];//XXX
 
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
+YokeInterface* pYokeInterface = nullptr;
 
 // function declarations
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
@@ -26,6 +27,7 @@ PLUGIN_API int XPluginStart(
     char* outDesc)
 {
     pForceFeedbackData = new FlightDataCollector;
+    pYokeInterface = new YokeInterface;
 
     // set plugin signature strings
     strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
@@ -49,6 +51,10 @@ PLUGIN_API int XPluginStart(
 
 PLUGIN_API void	XPluginStop(void)
 {
+    if (pYokeInterface)
+    {
+        delete pYokeInterface;
+    }
     if (pForceFeedbackData)
     {
         delete pForceFeedbackData;
@@ -75,8 +81,8 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
     // this test reads yoke roll feedback force and set this value to the transponder 
-    pForceFeedbackData->readParameters(dataBuffer);
-    float rollForce = *reinterpret_cast<float*>(dataBuffer+4);
+    pForceFeedbackData->readParameters(pYokeInterface->getSendBuffer());
+    float rollForce = *reinterpret_cast<float*>(pYokeInterface->getSendBuffer() + 4);
     XPLMSetDatai(testTransRef, 2000 + (int)rollForce);
 
     // returned value >0 means the time in seconds, after which the function is called again
