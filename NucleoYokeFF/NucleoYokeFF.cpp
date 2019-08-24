@@ -64,6 +64,7 @@ PLUGIN_API void	XPluginStop(void)
 /* This is called when the plugin is enabled */
 PLUGIN_API int  XPluginEnable(void)
 {
+    pYokeInterface->open();
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     XPLMScheduleFlightLoop(flightLoopID, 5.0f, 1);

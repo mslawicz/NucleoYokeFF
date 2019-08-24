@@ -2,10 +2,15 @@
 
 YokeInterface::YokeInterface()
 {
-    //pSendBuffer = new uint8_t[SendBufferSize];
+    hidGuid = CLSID_NULL;
 }
 
 YokeInterface::~YokeInterface()
 {
-    //delete[] pSendBuffer;
+
+}
+
+// check all connected HID devices and open Nucleo Yoke USB connection
+void YokeInterface::open(void)
+{
 }
