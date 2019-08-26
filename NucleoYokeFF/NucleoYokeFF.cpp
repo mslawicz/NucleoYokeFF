@@ -83,6 +83,11 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     float rollForce = *reinterpret_cast<float*>(pYokeInterface->getSendBuffer() + 4);
     XPLMSetDatai(testTransRef, 2000 + (int)rollForce);
 
+    // send some data for testing
+    static uint8_t cnt = 0;
+    uint8_t dataToSend[63] = { 1,2,3,4,5,6,cnt++ };
+    pYokeInterface->sendData(dataToSend);
+
     // returned value >0 means the time in seconds, after which the function is called again
     return 0.5f;
 }
