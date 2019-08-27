@@ -12,6 +12,8 @@
 XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to create a new flight loop callback
 XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
 
+static XPLMDataRef testTransRef;  //XXX
+
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
 YokeInterface* pYokeInterface = nullptr;
@@ -38,6 +40,8 @@ PLUGIN_API int XPluginStart(
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
 
+    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
+
     return (int)registerSuccess;
 }
 
@@ -61,9 +65,9 @@ PLUGIN_API int  XPluginEnable(void)
     // initialize periodic callbacks
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
-    XPLMScheduleFlightLoop(flightLoopID, 5.0f, 1);
+    XPLMScheduleFlightLoop(flightLoopID, 1.0f, 1);
     // enable reception of yoke data
-    pYokeInterface->receptionEnable();
+    //pYokeInterface->receptionEnable();
     return 1;
 }
 
@@ -82,6 +86,10 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
+    static int cnt = 0; //XXX
+    XPLMSetDatai(testTransRef, ++cnt); //XXX
+    if (cnt < 0) cnt = 0; //XXX
+
     // buffer for data to be sent to yoke
     static uint8_t dataToSend[HID_BUFFER_SIZE];
     // read registered parameters and place them in the buffer
@@ -90,5 +98,5 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     pYokeInterface->sendData(dataToSend);
  
     // returned value >0 means the time in seconds, after which the function is called again
-    return 0.02f;
+    return 0.5f;
 }
