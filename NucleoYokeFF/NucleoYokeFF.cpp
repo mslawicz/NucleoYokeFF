@@ -60,17 +60,25 @@ PLUGIN_API void	XPluginStop(void)
 /* This is called when the plugin is enabled */
 PLUGIN_API int  XPluginEnable(void)
 {
+    // open connection of the device with stated VID, PID and report_id
     pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, REPORT_ID);
+    // initialize periodic callbacks
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     XPLMScheduleFlightLoop(flightLoopID, 5.0f, 1);
+    // enable reception of yoke data
+    pYokeInterface->receptionEnable();
     return 1;
 }
 
 /*This is called when the plugin is disabled */
 PLUGIN_API void XPluginDisable(void)
 {
+    // disable reception of yoke data
+    pYokeInterface->resetReception();
+    // stop generating periodic callbacks
     XPLMDestroyFlightLoop(flightLoopID);
+    // close connection to the yoke
     pYokeInterface->closeConnection();
 }
 
@@ -78,16 +86,20 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
-    // this test reads yoke roll feedback force and set this value to the transponder 
-    pForceFeedbackData->readParameters(pYokeInterface->getSendBuffer());
-    float rollForce = *reinterpret_cast<float*>(pYokeInterface->getSendBuffer() + 4);
-    XPLMSetDatai(testTransRef, 2000 + (int)rollForce);
-
-    // send some data for testing
+    // this test reads reads data from the yoke and send them back to yoke
     static uint8_t cnt = 0;
-    uint8_t dataToSend[63] = { 1,2,3,4,5,6,cnt++ };
-    pYokeInterface->sendData(dataToSend);
-
+    if (pYokeInterface->isDataReceived())
+    {
+        // data is received
+        // first byte (after the report_id) is the callback counter
+        uint8_t dataToSend[63] = { cnt++ };
+        // next copy 62 bytes from receive buffer
+        memcpy(dataToSend + 1, pYokeInterface->getRecieveBuffer(), 62);
+        // send data to yoke
+        pYokeInterface->sendData(dataToSend);
+        // enable next reception from the yoke
+    }
+ 
     // returned value >0 means the time in seconds, after which the function is called again
-    return 0.5f;
+    return 0.01f;
 }
