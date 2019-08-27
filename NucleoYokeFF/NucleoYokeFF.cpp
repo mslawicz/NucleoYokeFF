@@ -12,8 +12,6 @@
 XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to create a new flight loop callback
 XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
 
-static XPLMDataRef testTransRef;  //XXX
-
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
 YokeInterface* pYokeInterface = nullptr;
@@ -39,8 +37,6 @@ PLUGIN_API int XPluginStart(
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_ptch_lb");
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
-
-    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
 
     return (int)registerSuccess;
 }
@@ -92,14 +88,16 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     {
         // data is received
         // first byte (after the report_id) is the callback counter
-        uint8_t dataToSend[63] = { cnt++ };
+        uint8_t dataToSend[63] = { cnt };
         // next copy 62 bytes from receive buffer
         memcpy(dataToSend + 1, pYokeInterface->getRecieveBuffer(), 62);
         // send data to yoke
         pYokeInterface->sendData(dataToSend);
         // enable next reception from the yoke
+        pYokeInterface->receptionEnable();
     }
+    cnt++;
  
     // returned value >0 means the time in seconds, after which the function is called again
-    return 0.01f;
+    return 0.02f;
 }

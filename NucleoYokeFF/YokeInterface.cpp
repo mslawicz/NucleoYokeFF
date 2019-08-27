@@ -112,6 +112,7 @@ bool YokeInterface::openConnection(USHORT VID, USHORT PID, uint8_t collection)
                             if (fileHandle != INVALID_HANDLE_VALUE)
                             {
                                 isOpen = true;
+                                Logger::logMessage("Connection to USB HID device with VID=" + std::to_string(VID) +" PID=" + std::to_string(PID) + " opened");
                             }
                             else
                             {
@@ -141,12 +142,13 @@ void YokeInterface::closeConnection(void)
     isOpen = false;
 }
 
-// enables reception of the incoming data in asynchronous mode
+// starts reception in asynchronous mode
+// this way it enables reception of the incoming data
 void YokeInterface::receptionEnable(void)
 {
     if (isOpen && (fileHandle != INVALID_HANDLE_VALUE))
     {
-        auto result = ReadFile(fileHandle, receiveBuffer, ReceivedDataSize, receivedDataCount, &receiveOverlappedData);
+        ReadFile(fileHandle, receiveBuffer, ReceivedDataSize, receivedDataCount, &receiveOverlappedData);
     }
 }
 
@@ -158,6 +160,7 @@ bool YokeInterface::isDataReceived(void)
 }
 
 // send user data buffer in asynchronous mode
+// 63 bytes are used from dataBuffer
 void YokeInterface::sendData(uint8_t* dataBuffer)
 {
     // check if previous transmission is completed
