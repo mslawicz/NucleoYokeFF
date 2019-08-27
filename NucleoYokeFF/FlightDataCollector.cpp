@@ -1,6 +1,7 @@
 #include "Logger.h"
 #include "FlightDataCollector.h"
 
+// register DataRef parameter to be read
 bool FlightDataCollector::registerParameter(std::string parameterName)
 {
     bool result = false;
@@ -21,6 +22,7 @@ bool FlightDataCollector::registerParameter(std::string parameterName)
     return result;
 }
 
+// read all registered parameters and place their values in the buffer
 void FlightDataCollector::readParameters(uint8_t* buffer)
 {
     // iterate over vector of registered parameters

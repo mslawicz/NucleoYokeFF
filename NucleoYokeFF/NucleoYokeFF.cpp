@@ -82,21 +82,12 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
-    // this test reads reads data from the yoke and send them back to yoke
-    static uint8_t cnt = 0;
-    if (pYokeInterface->isDataReceived())
-    {
-        // data is received
-        // first byte (after the report_id) is the callback counter
-        uint8_t dataToSend[63] = { cnt };
-        // next copy 62 bytes from receive buffer
-        memcpy(dataToSend + 1, pYokeInterface->getRecieveBuffer(), 62);
-        // send data to yoke
-        pYokeInterface->sendData(dataToSend);
-        // enable next reception from the yoke
-        pYokeInterface->receptionEnable();
-    }
-    cnt++;
+    // buffer for data to be sent to yoke
+    static uint8_t dataToSend[HID_BUFFER_SIZE];
+    // read registered parameters and place them in the buffer
+    pForceFeedbackData->readParameters(dataToSend);
+    // send data to yoke
+    pYokeInterface->sendData(dataToSend);
  
     // returned value >0 means the time in seconds, after which the function is called again
     return 0.02f;

@@ -148,7 +148,7 @@ void YokeInterface::receptionEnable(void)
 {
     if (isOpen && (fileHandle != INVALID_HANDLE_VALUE))
     {
-        ReadFile(fileHandle, receiveBuffer, ReceivedDataSize, receivedDataCount, &receiveOverlappedData);
+        ReadFile(fileHandle, receiveBuffer, HID_BUFFER_SIZE, receivedDataCount, &receiveOverlappedData);
     }
 }
 
@@ -166,8 +166,8 @@ void YokeInterface::sendData(uint8_t* dataBuffer)
     // check if previous transmission is completed
     if (GetOverlappedResult(fileHandle, &sendOverlappedData, sendDataCount, FALSE))
     {
-        memcpy(sendBuffer + 1, dataBuffer, SendBufferSize - 1);
+        memcpy(sendBuffer + 1, dataBuffer, HID_BUFFER_SIZE - 1);
         sendBuffer[0] = REPORT_ID;
-        WriteFile(fileHandle, sendBuffer, SendBufferSize, NULL, &sendOverlappedData);
+        WriteFile(fileHandle, sendBuffer, HID_BUFFER_SIZE, NULL, &sendOverlappedData);
     }
 }
