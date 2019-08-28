@@ -170,4 +170,8 @@ void YokeInterface::sendData(uint8_t* dataBuffer)
         sendBuffer[0] = REPORT_ID;
         WriteFile(fileHandle, sendBuffer, HID_BUFFER_SIZE, NULL, &sendOverlappedData);
     }
+    else
+    {
+        Logger::logMessage("GetOverlappedResult error=" + std::to_string(GetLastError()));
+    }
 }

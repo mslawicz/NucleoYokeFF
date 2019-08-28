@@ -94,9 +94,10 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     static uint8_t dataToSend[HID_BUFFER_SIZE];
     // read registered parameters and place them in the buffer
     pForceFeedbackData->readParameters(dataToSend);
+    dataToSend[12] = cnt & 0xFF;
     // send data to yoke
     pYokeInterface->sendData(dataToSend);
  
     // returned value >0 means the time in seconds, after which the function is called again
-    return 0.5f;
+    return 0.1f;
 }
