@@ -163,15 +163,24 @@ bool YokeInterface::isDataReceived(void)
 // 63 bytes are used from dataBuffer
 void YokeInterface::sendData(uint8_t* dataBuffer)
 {
-    // check if previous transmission is completed
-    if (GetOverlappedResult(fileHandle, &sendOverlappedData, sendDataCount, FALSE))
+    // get overlapped result without waiting
+    bool overlappedResult = GetOverlappedResult(fileHandle, &sendOverlappedData, sendDataCount, FALSE);
+    DWORD lastError = GetLastError();
+    // if the process is pending, return without action
+    if (!overlappedResult && lastError == ERROR_IO_PENDING)
     {
-        memcpy(sendBuffer + 1, dataBuffer, HID_BUFFER_SIZE - 1);
-        sendBuffer[0] = REPORT_ID;
-        WriteFile(fileHandle, sendBuffer, HID_BUFFER_SIZE, NULL, &sendOverlappedData);
+        return;
     }
-    else
+    // if the process is not over, but it's not pending (the other error occured)
+    if (!overlappedResult)
     {
-        Logger::logMessage("GetOverlappedResult error=" + std::to_string(GetLastError()));
+        // reset overlapped data
+        memset(&sendOverlappedData, 0, sizeof(sendOverlappedData));
+        sendOverlappedData.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        Logger::logMessage("GetOverlappedResult error=" + std::to_string(lastError)); //XXX for test
     }
+    // send data every time if only process in not pending
+    memcpy(sendBuffer + 1, dataBuffer, HID_BUFFER_SIZE - 1);
+    sendBuffer[0] = REPORT_ID;
+    WriteFile(fileHandle, sendBuffer, HID_BUFFER_SIZE, NULL, &sendOverlappedData);
 }

@@ -99,5 +99,5 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     pYokeInterface->sendData(dataToSend);
  
     // returned value >0 means the time in seconds, after which the function is called again
-    return 0.1f;
+    return 0.02f;
 }
