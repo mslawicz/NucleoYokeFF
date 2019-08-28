@@ -177,7 +177,7 @@ void YokeInterface::sendData(uint8_t* dataBuffer)
         // reset overlapped data
         memset(&sendOverlappedData, 0, sizeof(sendOverlappedData));
         sendOverlappedData.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-        Logger::logMessage("GetOverlappedResult error=" + std::to_string(lastError)); //XXX for test
+        Logger::logMessage("USB data send error=" + std::to_string(lastError));
     }
     // send data every time if only process in not pending
     memcpy(sendBuffer + 1, dataBuffer, HID_BUFFER_SIZE - 1);
