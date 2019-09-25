@@ -36,9 +36,22 @@ PLUGIN_API int XPluginStart(
 
     // register simulator parameters
     bool registerSuccess = true;
+    // pitch force to yoke
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_ptch_lb");
+    // roll force to yoke
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_roll_lb");
+    // yaw force to yoke
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/misc/act_frc_hdng_lb");
+    // deflection of flaps 0..1
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/controls/flaprat");
+    // int/bool are there any retracted gears?
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/aircraft/gear/acf_gear_retract");
+    // gear 1 deflection
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear1def");
+    // gear 2 deflection
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear2def");
+    // gear 3 deflection
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear3def");
 
     testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
 
@@ -92,12 +105,13 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
 
     // buffer for data to be sent to yoke
     static uint8_t dataToSend[HID_BUFFER_SIZE];
+    // first byte of data is the frame counter
+    dataToSend[0] = cnt & 0xFF;
     // read registered parameters and place them in the buffer
-    pForceFeedbackData->readParameters(dataToSend);
-    dataToSend[12] = cnt & 0xFF;
+    pForceFeedbackData->readParameters(dataToSend + 1);
     // send data to yoke
     pYokeInterface->sendData(dataToSend);
  
-    // returned value >0 means the time in seconds, after which the function is called again
+    // returned value >0 means the time in seconds, after which the function will be called again
     return 0.02f;
 }

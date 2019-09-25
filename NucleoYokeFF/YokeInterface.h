@@ -6,7 +6,7 @@
 #include <hidsdi.h>
 
 #define VENDOR_ID   0x483
-#define PRODUCT_ID  0x5710
+#define PRODUCT_ID  0x5711
 #define REPORT_ID   0x03
 #define HID_BUFFER_SIZE    64
 

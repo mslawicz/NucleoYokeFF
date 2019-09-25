@@ -160,7 +160,7 @@ bool YokeInterface::isDataReceived(void)
 }
 
 // send user data buffer in asynchronous mode
-// 63 bytes are used from dataBuffer
+// 63 bytes are used from dataBuffer; they are sent after report id byte (total 64 bytes)
 void YokeInterface::sendData(uint8_t* dataBuffer)
 {
     // get overlapped result without waiting

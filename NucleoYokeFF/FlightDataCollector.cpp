@@ -1,7 +1,7 @@
 #include "Logger.h"
 #include "FlightDataCollector.h"
 
-// register DataRef parameter to be read
+// register DataRef parameter to be inquired
 bool FlightDataCollector::registerParameter(std::string parameterName)
 {
     bool result = false;
@@ -34,6 +34,13 @@ void FlightDataCollector::readParameters(uint8_t* buffer)
         case xplmType_Float:
         {
             auto value = XPLMGetDataf(parameter.handle);
+            memcpy(buffer, &value, sizeof(value));
+            buffer += sizeof(value);
+            break;
+        }
+        case xplmType_Int:
+        {
+            auto value = XPLMGetDatai(parameter.handle);
             memcpy(buffer, &value, sizeof(value));
             buffer += sizeof(value);
             break;
