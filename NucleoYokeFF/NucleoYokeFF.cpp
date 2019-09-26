@@ -12,8 +12,6 @@
 XPLMCreateFlightLoop_t flightLoopStructure;     // contains the parameters to create a new flight loop callback
 XPLMFlightLoopID flightLoopID;      // opaque identifier for a flight loop callback
 
-static XPLMDataRef testTransRef;  //XXX
-
 // global variables
 FlightDataCollector* pForceFeedbackData = nullptr;
 YokeInterface* pYokeInterface = nullptr;
@@ -52,8 +50,6 @@ PLUGIN_API int XPluginStart(
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear2def");
     // gear 3 deflection
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear3def");
-
-    testTransRef = XPLMFindDataRef("sim/cockpit/radios/transponder_code"); //XXX
 
     return (int)registerSuccess;
 }
@@ -99,14 +95,12 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
-    static int cnt = 0; //XXX
-    XPLMSetDatai(testTransRef, ++cnt); //XXX
-    if (cnt < 0) cnt = 0; //XXX
+    static uint8_t cnt = 0;
 
     // buffer for data to be sent to yoke
     static uint8_t dataToSend[HID_BUFFER_SIZE];
     // first byte of data is the frame counter
-    dataToSend[0] = cnt & 0xFF;
+    dataToSend[0] = cnt++;
     // read registered parameters and place them in the buffer
     pForceFeedbackData->readParameters(dataToSend + 1);
     // send data to yoke
