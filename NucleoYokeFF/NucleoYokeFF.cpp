@@ -43,7 +43,7 @@ PLUGIN_API int XPluginStart(
     // deflection of flaps 0..1
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/controls/flaprat");
     // int/bool are there any retracted gears?
-    registerSuccess &= pForceFeedbackData->registerParameter("sim/aircraft/gear/acf_gear_retract");
+    registerSuccess &= pForceFeedbackData->registerParameter("sim/aircraft/gear/acf_gear_retract", true);
     // gear 1 deflection
     registerSuccess &= pForceFeedbackData->registerParameter("sim/flightmodel/movingparts/gear1def");
     // gear 2 deflection
@@ -101,8 +101,11 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     static uint8_t dataToSend[HID_BUFFER_SIZE];
     // first byte of data is the frame counter
     dataToSend[0] = cnt++;
-    // read registered parameters and place them in the buffer
-    pForceFeedbackData->readParameters(dataToSend + 1);
+    // read registered parameters and place them in the buffer from the 5th position
+    pForceFeedbackData->readParameters(dataToSend + 5);
+    // place boolean flags in position 1-4
+    uint32_t booleanFlags = pForceFeedbackData->getBooleanFlags();
+    memcpy(dataToSend + 1, &booleanFlags, sizeof(booleanFlags));
     // send data to yoke
     pYokeInterface->sendData(dataToSend);
  
