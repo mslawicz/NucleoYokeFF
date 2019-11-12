@@ -159,8 +159,7 @@ bool YokeInterface::isDataReceived(void)
     return (WaitForSingleObject(receiveOverlappedData.hEvent, 0) == WAIT_OBJECT_0);
 }
 
-// send user data buffer in asynchronous mode
-// 63 bytes are used from dataBuffer; they are sent after report id byte (total 64 bytes)
+// send user data buffer in asynchronous mode (64 bytes)
 void YokeInterface::sendData(uint8_t* dataBuffer)
 {
     // get overlapped result without waiting
@@ -180,7 +179,6 @@ void YokeInterface::sendData(uint8_t* dataBuffer)
         Logger::logMessage("USB data send error=" + std::to_string(lastError));
     }
     // send data every time if only process in not pending
-    memcpy(sendBuffer + 1, dataBuffer, HID_BUFFER_SIZE - 1);
-    sendBuffer[0] = REPORT_ID;
+    memcpy(sendBuffer, dataBuffer, HID_BUFFER_SIZE);
     WriteFile(fileHandle, sendBuffer, HID_BUFFER_SIZE, NULL, &sendOverlappedData);
 }
