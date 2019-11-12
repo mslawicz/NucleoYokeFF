@@ -131,6 +131,7 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
 
 	// byte 3 is gear deflection state (3 gears)
 	// every gear is coded in 2 bits: 0-fully up, 1-under way, 2-fully down, 3-not used
+    dataToSend[3] = 0;
 	fParameter = pForceFeedbackData->readFloat("nose_gear_deflection");
 	if (fParameter == 1.0f)
 	{
