@@ -56,12 +56,14 @@ PLUGIN_API int XPluginStart(
 	registerSuccess &= pForceFeedbackData->registerParameter("acf_vno", "sim/aircraft/view/acf_Vno");
 	// Air speed indicated - this takes into account air density and wind direction [kias]
 	registerSuccess &= pForceFeedbackData->registerParameter("indicated_airspeed", "sim/flightmodel/position/indicated_airspeed");
-	// Gear/ground forces - sideways - ACF X. Override with override_gear_forces [Newtons]
-	registerSuccess &= pForceFeedbackData->registerParameter("gear_force_sideways", "sim/flightmodel/forces/fside_gear");
-	// Gear/ground forces - upward - ACF Y [Newtons]
-	registerSuccess &= pForceFeedbackData->registerParameter("gear_force_upward", "sim/flightmodel/forces/fnrml_gear");
-	// Gear/ground forces - backward - ACF Z [Newtons]
-	registerSuccess &= pForceFeedbackData->registerParameter("gear_force_backward", "sim/flightmodel/forces/faxil_gear");
+	// stick shaker available?
+	registerSuccess &= pForceFeedbackData->registerParameter("stick_shaker", "sim/aircraft/forcefeedback/acf_ff_stickshaker");
+	// stall warning on?
+	registerSuccess &= pForceFeedbackData->registerParameter("stall_warning", "sim/cockpit2/annunciators/stall_warning");
+	// reverserser on (one bit for each engine)
+	registerSuccess &= pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
+    // Prop speed float array for max 8 engines [rpm]
+    registerSuccess &= pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
 
     return (int)registerSuccess;
 }
@@ -185,6 +187,27 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
 	// bytes 24-27 is aircraft airspeed in relation to its Vno <0.0f .. 1.0f+> (may exceed 1.0f)
 	fParameter = pForceFeedbackData->readFloat("indicated_airspeed") / pForceFeedbackData->readFloat("acf_vno");
 	memcpy(dataToSend + 24, &fParameter, sizeof(fParameter));
+
+    if ((pForceFeedbackData->readInt("stick_shaker") != 0) &&
+        (pForceFeedbackData->readInt("stall_warning") != 0))
+    {
+        // this aircraft is equipped with a stick shaker and 
+        dataToSend[2] |= (1 << 1);
+    }
+
+    if (pForceFeedbackData->readInt("reverser_deployed") != 0)
+    {
+        // reverser is on
+        dataToSend[2] |= (1 << 2);
+    }
+
+    // bytes 28-31 is propeller speed in [rpm]; the higher value of first 2 engines is used
+    int propSpeed[2];
+    if (pForceFeedbackData->readIntArray("prop_speed", propSpeed, 2) == 2)
+    {
+        iParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
+        memcpy(dataToSend + 27, &iParameter, sizeof(iParameter));
+    }
 
     // send data to yoke
     pYokeInterface->sendData(dataToSend);

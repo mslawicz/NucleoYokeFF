@@ -19,6 +19,7 @@ public:
     bool registerParameter(std::string parameterNickname, std::string parameterName);
 	float readFloat(std::string parameterNickname);
 	int readInt(std::string parameterNickname);
+    int readIntArray(std::string parameterNickname, int* buffer, int length, int offset = 0);
 private:
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
 };

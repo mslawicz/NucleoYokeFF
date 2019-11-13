@@ -60,3 +60,19 @@ int FlightDataCollector::readInt(std::string parameterNickname)
 		return XPLMGetDatai(parameterIt->second.handle);
 	}
 }
+
+/*
+* read array of int parameter
+*/
+int FlightDataCollector::readIntArray(std::string parameterNickname, int* buffer, int length, int offset)
+{
+    auto parameterIt = simulatorParameters.find(parameterNickname);
+    if ((parameterIt == simulatorParameters.end()) || (parameterIt->second.type != xplmType_IntArray))
+    {
+        return 0;
+    }
+    else
+    {
+        return XPLMGetDatavi(parameterIt->second.handle, buffer, offset, length);
+    }
+}
