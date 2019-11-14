@@ -206,7 +206,7 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     if (pForceFeedbackData->readIntArray("prop_speed", propSpeed, 2) == 2)
     {
         iParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
-        memcpy(dataToSend + 27, &iParameter, sizeof(iParameter));
+        memcpy(dataToSend + 28, &iParameter, sizeof(iParameter));
     }
 
     // send data to yoke
