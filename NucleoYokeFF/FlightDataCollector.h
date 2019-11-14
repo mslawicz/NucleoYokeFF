@@ -20,6 +20,7 @@ public:
 	float readFloat(std::string parameterNickname);
 	int readInt(std::string parameterNickname);
     int readIntArray(std::string parameterNickname, int* buffer, int length, int offset = 0);
+    void writeInt(std::string parameterNickname, int value);
 private:
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
 };

@@ -64,6 +64,8 @@ PLUGIN_API int XPluginStart(
 	registerSuccess &= pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
     // Prop speed float array for max 8 engines [rpm]
     registerSuccess &= pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
+    // XXX transponder for test purposes
+    registerSuccess &= pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
 
     return (int)registerSuccess;
 }
@@ -90,7 +92,7 @@ PLUGIN_API int  XPluginEnable(void)
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     XPLMScheduleFlightLoop(flightLoopID, 1.0f, 1);
     // enable reception of yoke data
-    //pYokeInterface->receptionEnable();
+    pYokeInterface->receptionEnable();
     return 1;
 }
 
@@ -109,6 +111,17 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
+    if (pYokeInterface->isDataReceived())
+    {
+        // data is received
+        auto receiveBuffer = pYokeInterface->getRecieveBuffer();
+        //XXX set transponder for test
+        pForceFeedbackData->writeInt("transponder", (*reinterpret_cast<int*>(receiveBuffer + 1)) & 0xFFF + 2000);
+
+        // enable next reception from the yoke
+        pYokeInterface->receptionEnable();
+    }
+
     static uint8_t cnt = 0;
 	float fParameter;
 	int iParameter;

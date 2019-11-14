@@ -76,3 +76,19 @@ int FlightDataCollector::readIntArray(std::string parameterNickname, int* buffer
         return XPLMGetDatavi(parameterIt->second.handle, buffer, offset, length);
     }
 }
+
+/*
+* write int parameter
+*/
+void FlightDataCollector::writeInt(std::string parameterNickname, int value)
+{
+    auto parameterIt = simulatorParameters.find(parameterNickname);
+    if ((parameterIt == simulatorParameters.end()) || (parameterIt->second.type != xplmType_Int))
+    {
+        return;
+    }
+    else
+    {
+        XPLMSetDatai(parameterIt->second.handle, value);
+    }
+}
