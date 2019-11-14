@@ -78,6 +78,22 @@ int FlightDataCollector::readIntArray(std::string parameterNickname, int* buffer
 }
 
 /*
+* read array of float parameter
+*/
+int FlightDataCollector::readFloatArray(std::string parameterNickname, float* buffer, int length, int offset)
+{
+    auto parameterIt = simulatorParameters.find(parameterNickname);
+    if ((parameterIt == simulatorParameters.end()) || (parameterIt->second.type != xplmType_FloatArray))
+    {
+        return 0;
+    }
+    else
+    {
+        return XPLMGetDatavf(parameterIt->second.handle, buffer, offset, length);
+    }
+}
+
+/*
 * write int parameter
 */
 void FlightDataCollector::writeInt(std::string parameterNickname, int value)

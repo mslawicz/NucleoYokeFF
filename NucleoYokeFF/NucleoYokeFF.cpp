@@ -215,11 +215,11 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     }
 
     // bytes 28-31 is propeller speed in [rpm]; the higher value of first 2 engines is used
-    int propSpeed[2];
-    if (pForceFeedbackData->readIntArray("prop_speed", propSpeed, 2) == 2)
+    float propSpeed[2];
+    if (pForceFeedbackData->readFloatArray("prop_speed", propSpeed, 2) == 2)
     {
-        iParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
-        memcpy(dataToSend + 28, &iParameter, sizeof(iParameter));
+        fParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
+        memcpy(dataToSend + 28, &fParameter, sizeof(fParameter));
     }
 
     // send data to yoke
