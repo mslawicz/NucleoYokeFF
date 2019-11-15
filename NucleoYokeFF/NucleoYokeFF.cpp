@@ -87,7 +87,7 @@ PLUGIN_API int  XPluginEnable(void)
     // open connection of the device with stated VID, PID and report_id
     pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, REPORT_ID);
     // initialize periodic callbacks
-    flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
+    flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_BeforeFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     XPLMScheduleFlightLoop(flightLoopID, 1.0f, 1);
     // enable reception of yoke data
@@ -108,18 +108,12 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) { }
 
+/*
+This function is called before per-frame X-Plane calculations; max every 10 ms
+*/
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
-    if (pYokeInterface->isDataReceived())
-    {
-        // data is received
-        auto receiveBuffer = pYokeInterface->getRecieveBuffer();
-        //XXX set transponder for test
-        XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 1)) & 0xFF) + 2000);
-
-        // enable next reception from the yoke
-        pYokeInterface->receptionEnable();
-    }
+    // read dataref values and prepare send buffer
 
     static uint8_t cnt = 0;
 	float fParameter;
@@ -221,9 +215,21 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
         memcpy(dataToSend + 28, &fParameter, sizeof(fParameter));
     }
 
+    // check if data from Nucleo Yoke has been received
+    if (pYokeInterface->isDataReceived())
+    {
+        // data is received
+        auto receiveBuffer = pYokeInterface->getRecieveBuffer();
+        //XXX set transponder for test
+        XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 1)) & 0xFF) + 2000);
+
+        // enable next reception from the yoke
+        pYokeInterface->receptionEnable();
+    }
+
     // send data to yoke
     pYokeInterface->sendData(dataToSend);
  
-    // returned value >0 means the time in seconds, after which the function will be called again
-    return 0.02f;
+    // return time value in seconds, after which the function will be called again
+    return 0.01f;
 }
