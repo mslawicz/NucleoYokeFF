@@ -18,11 +18,7 @@ public:
     FlightDataCollector(void);
     void registerParameter(std::string parameterNickname, std::string parameterName);
     bool registrationSucceeded(void) const { return success; }
-	float readFloat(std::string parameterNickname);
-	int readInt(std::string parameterNickname);
-    int readIntArray(std::string parameterNickname, int* buffer, int length, int offset = 0);
-    int readFloatArray(std::string parameterNickname, float* buffer, int length, int offset = 0);
-    void writeInt(std::string parameterNickname, int value);
+    XPLMDataRef getHandle(std::string parameterNickname) const;
 private:
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
     bool success;
