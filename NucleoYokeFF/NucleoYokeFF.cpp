@@ -33,41 +33,40 @@ PLUGIN_API int XPluginStart(
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin v2.0 for X-Plane");
 
     // register simulator parameters
-    bool registerSuccess = true;
     // int/bool are there any retracted gears?
-    registerSuccess &= pForceFeedbackData->registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
+    pForceFeedbackData->registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
     // gear 1 deflection <0.0f .. 1.0f>
-    registerSuccess &= pForceFeedbackData->registerParameter("nose_gear_deflection", "sim/flightmodel/movingparts/gear1def");
+    pForceFeedbackData->registerParameter("nose_gear_deflection", "sim/flightmodel/movingparts/gear1def");
     // gear 2 deflection <0.0f .. 1.0f>
-    registerSuccess &= pForceFeedbackData->registerParameter("left_gear_deflection", "sim/flightmodel/movingparts/gear2def");
+    pForceFeedbackData->registerParameter("left_gear_deflection", "sim/flightmodel/movingparts/gear2def");
     // gear 3 deflection <0.0f .. 1.0f>
-    registerSuccess &= pForceFeedbackData->registerParameter("right_gear_deflection", "sim/flightmodel/movingparts/gear3def");
+    pForceFeedbackData->registerParameter("right_gear_deflection", "sim/flightmodel/movingparts/gear3def");
 	// deflection of flaps <0.0f .. 1.0f>
-	registerSuccess &= pForceFeedbackData->registerParameter("flaps_deflection", "sim/flightmodel/controls/flaprat");
+	pForceFeedbackData->registerParameter("flaps_deflection", "sim/flightmodel/controls/flaprat");
 	// Total pitch control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	registerSuccess &= pForceFeedbackData->registerParameter("total_pitch", "sim/cockpit2/controls/total_pitch_ratio");
+	pForceFeedbackData->registerParameter("total_pitch", "sim/cockpit2/controls/total_pitch_ratio");
 	// Total roll control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	registerSuccess &= pForceFeedbackData->registerParameter("total_roll", "sim/cockpit2/controls/total_roll_ratio");
+	pForceFeedbackData->registerParameter("total_roll", "sim/cockpit2/controls/total_roll_ratio");
 	// Total yaw control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	registerSuccess &= pForceFeedbackData->registerParameter("total_yaw", "sim/cockpit2/controls/total_heading_ratio");
+	pForceFeedbackData->registerParameter("total_yaw", "sim/cockpit2/controls/total_heading_ratio");
 	// Throttle position of the handle itself - this controls all the handles at once. <0.0f .. 1.0f>
-	registerSuccess &= pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
+	pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
 	// Maximum structural cruising speed or maximum speed for normal operations [kias]
-	registerSuccess &= pForceFeedbackData->registerParameter("acf_vno", "sim/aircraft/view/acf_Vno");
+	pForceFeedbackData->registerParameter("acf_vno", "sim/aircraft/view/acf_Vno");
 	// Air speed indicated - this takes into account air density and wind direction [kias]
-	registerSuccess &= pForceFeedbackData->registerParameter("indicated_airspeed", "sim/flightmodel/position/indicated_airspeed");
+	pForceFeedbackData->registerParameter("indicated_airspeed", "sim/flightmodel/position/indicated_airspeed");
 	// stick shaker available?
-	registerSuccess &= pForceFeedbackData->registerParameter("stick_shaker", "sim/aircraft/forcefeedback/acf_ff_stickshaker");
+	pForceFeedbackData->registerParameter("stick_shaker", "sim/aircraft/forcefeedback/acf_ff_stickshaker");
 	// stall warning on?
-	registerSuccess &= pForceFeedbackData->registerParameter("stall_warning", "sim/cockpit2/annunciators/stall_warning");
+	pForceFeedbackData->registerParameter("stall_warning", "sim/cockpit2/annunciators/stall_warning");
 	// reverserser on (one bit for each engine)
-	registerSuccess &= pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
+	pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
     // Prop speed float array for max 8 engines [rpm]
-    registerSuccess &= pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
+    pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
     // XXX transponder for test purposes
-    registerSuccess &= pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
+    pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
 
-    return (int)registerSuccess;
+    return (int)pForceFeedbackData->registrationSucceeded();
 }
 
 PLUGIN_API void	XPluginStop(void)

@@ -16,7 +16,8 @@ class FlightDataCollector
 {
 public:
     FlightDataCollector(void);
-    bool registerParameter(std::string parameterNickname, std::string parameterName);
+    void registerParameter(std::string parameterNickname, std::string parameterName);
+    bool registrationSucceeded(void) const { return success; }
 	float readFloat(std::string parameterNickname);
 	int readInt(std::string parameterNickname);
     int readIntArray(std::string parameterNickname, int* buffer, int length, int offset = 0);
@@ -24,5 +25,6 @@ public:
     void writeInt(std::string parameterNickname, int value);
 private:
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
+    bool success;
 };
 

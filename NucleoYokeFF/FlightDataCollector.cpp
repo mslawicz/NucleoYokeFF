@@ -3,15 +3,14 @@
 
 FlightDataCollector::FlightDataCollector(void)
 {
-
+    success = true;
 }
 
 /*
 * register DataRef parameter to be inquired
 */
-bool FlightDataCollector::registerParameter(std::string parameterNickname, std::string parameterName)
+void FlightDataCollector::registerParameter(std::string parameterNickname, std::string parameterName)
 {
-    bool result = false;
     SimulatorParameter newParameter;
     newParameter.name = parameterName;
     newParameter.handle = XPLMFindDataRef(newParameter.name.c_str());
@@ -20,13 +19,12 @@ bool FlightDataCollector::registerParameter(std::string parameterNickname, std::
     if (newParameter.handle)
     {
 		simulatorParameters.emplace(parameterNickname, newParameter);
-        result = true;
     }
     else
     {
         Logger::logMessage("failed to register parameter " + parameterName);
+        success = false;
     }
-    return result;
 }
 
 /*
