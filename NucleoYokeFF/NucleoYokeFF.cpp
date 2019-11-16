@@ -63,8 +63,10 @@ PLUGIN_API int XPluginStart(
 	pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
     // Prop speed float array for max 8 engines [rpm]
     pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
+    // Throttle position of the handle itself - this controls all the handles at once
+    pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
     // XXX transponder for test purposes
-    pForceFeedbackData->registerParameter("throttle", "	sim/cockpit2/engine/actuators/throttle_ratio_all");
+    pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
 
     return (int)pForceFeedbackData->registrationSucceeded();
 }
@@ -220,8 +222,10 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     {
         // data is received
         auto receiveBuffer = pYokeInterface->getRecieveBuffer();
-        //set throttle from read bytes 20-23
+        // set throttle from received bytes 20-23
         XPLMSetDataf(pForceFeedbackData->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
+        //XXX set transponder for test
+        XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
 
         // enable next reception from the yoke
         pYokeInterface->receptionEnable();
