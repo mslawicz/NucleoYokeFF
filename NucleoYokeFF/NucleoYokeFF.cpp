@@ -104,6 +104,12 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
 // register simulator parameters
 void registerParameters(void)
 {
+    // This is how much the user input has deflected the yoke in the cockpit, in ratio, where -1.0 is full down, and 1.0 is full up
+    pForceFeedbackData->registerParameter("yoke_pitch", "sim/cockpit2/controls/yoke_pitch_ratio");
+    // This is how much the user input has deflected the yoke in the cockpit, in ratio, where -1.0 is full left, and 1.0 is full right.
+    pForceFeedbackData->registerParameter("yoke_roll", "sim/cockpit2/controls/yoke_roll_ratio");
+    // This is how much the user input has deflected the rudder in the cockpit, in ratio, where -1.0 is full left, and 1.0 is full right
+    pForceFeedbackData->registerParameter("yoke_heading", "sim/cockpit2/controls/yoke_heading_ratio");
     // int/bool are there any retracted gears?
     pForceFeedbackData->registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
     // gear 1 deflection <0.0f .. 1.0f>
@@ -147,6 +153,12 @@ void registerParameters(void)
 // set simulator parameters according to received data
 void setParameters(uint8_t* receiveBuffer)
 {
+    // set yoke pitch from received bytes 8-11
+    XPLMSetDataf(pForceFeedbackData->getHandle("yoke_pitch"), *reinterpret_cast<float*>(receiveBuffer + 8));
+    // set yoke roll from received bytes 12-15
+    XPLMSetDataf(pForceFeedbackData->getHandle("yoke_roll"), *reinterpret_cast<float*>(receiveBuffer + 12));
+    // set 'pedals' deflection from received bytes 16-19
+    XPLMSetDataf(pForceFeedbackData->getHandle("yoke_heading"), *reinterpret_cast<float*>(receiveBuffer + 16));
     // set throttle from received bytes 20-23
     XPLMSetDataf(pForceFeedbackData->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
     // set mixture from received bytes 24-27
