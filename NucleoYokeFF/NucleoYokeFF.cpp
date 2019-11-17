@@ -20,6 +20,7 @@ YokeInterface* pYokeInterface = nullptr;
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 void registerParameters(void);
 void setParameters(uint8_t* receiveBuffer);
+void getParameters(void);
 
 PLUGIN_API int XPluginStart(
     char* outName,
@@ -85,106 +86,7 @@ This function is called before per-frame X-Plane calculations; max every 10 ms
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
     // read dataref values and prepare send buffer
-
-    static uint8_t cnt = 0;
-	float fParameter;
-	int iParameter;
-
-    // buffer for data to be sent to yoke
-    static uint8_t dataToSend[HID_BUFFER_SIZE];
-
-    // byte 0 is the report ID
-	dataToSend[0] = REPORT_ID;
-
-	// byte 1 is the frame counter
-	dataToSend[1] = cnt++;
-
-	// byte 2 is the simulator boolean flag register
-	dataToSend[2] = 0;
-
-	// set 'is retractable' flag
-	if (XPLMGetDatai(pForceFeedbackData->getHandle("is_retractable")) != 0)
-	{
-		dataToSend[2] |= (1 << 0);
-	}
-
-	// byte 3 is gear deflection state (3 gears)
-	// every gear is coded in 2 bits: 0-fully up, 1-under way, 2-fully down, 3-not used
-    dataToSend[3] = 0;
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("nose_gear_deflection"));
-	if (fParameter == 1.0f)
-	{
-		dataToSend[3] |= (0x02 << 0);
-	}
-	else if (fParameter > 0.0f)
-	{
-		dataToSend[3] |= (0x01 << 0);
-	}
-
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("left_gear_deflection"));
-	if (fParameter == 1.0f)
-	{
-		dataToSend[3] |= (0x02 << 2);
-	}
-	else if (fParameter > 0.0f)
-	{
-		dataToSend[3] |= (0x01 << 2);
-	}
-
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("right_gear_deflection"));
-	if (fParameter == 1.0f)
-	{
-		dataToSend[3] |= (0x02 << 4);
-	}
-	else if (fParameter > 0.0f)
-	{
-		dataToSend[3] |= (0x01 << 4);
-	}
-
-	// bytes 4-7 is flaps deflection <0.0f .. 1.0f>
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("flaps_deflection"));
-	memcpy(dataToSend + 4, &fParameter, sizeof(fParameter));
-
-	// bytes 8-11 is total pitch control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_pitch"));
-	memcpy(dataToSend + 8, &fParameter, sizeof(fParameter));
-
-	// bytes 12-15 is total roll control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_roll"));
-	memcpy(dataToSend + 12, &fParameter, sizeof(fParameter));
-
-	// bytes 16-19 is total yaw control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_yaw"));
-	memcpy(dataToSend + 16, &fParameter, sizeof(fParameter));
-
-	// bytes 20-23 is throttle position of the handle itself - this controls all the handles at once <0.0f .. 1.0f>
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("throttle"));
-	memcpy(dataToSend + 20, &fParameter, sizeof(fParameter));
-
-	// bytes 24-27 is aircraft airspeed in relation to its Vno <0.0f .. 1.0f+> (may exceed 1.0f)
-	fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("indicated_airspeed")) / XPLMGetDataf(pForceFeedbackData->getHandle("acf_vno"));
-	memcpy(dataToSend + 24, &fParameter, sizeof(fParameter));
-
-    if ((XPLMGetDatai(pForceFeedbackData->getHandle("stick_shaker")) != 0) &&
-        (XPLMGetDatai(pForceFeedbackData->getHandle("stall_warning")) != 0))
-    {
-        // this aircraft is equipped with a stick shaker and 
-        dataToSend[2] |= (1 << 1);
-    }
-
-    if (XPLMGetDatai(pForceFeedbackData->getHandle("reverser_deployed")) != 0)
-    {
-        // reverser is on
-        dataToSend[2] |= (1 << 2);
-    }
-
-    // bytes 28-31 is propeller speed in [rpm]; the higher value of first 2 engines is used
-    float propSpeed[2];
-    if (XPLMGetDatavf(pForceFeedbackData->getHandle("prop_speed"), propSpeed, 0, 2) == 2)
-    {
-        fParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
-        memcpy(dataToSend + 28, &fParameter, sizeof(fParameter));
-    }
+    getParameters();
 
     // check if data from Nucleo Yoke has been received
     if (pYokeInterface->isDataReceived())
@@ -195,9 +97,6 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
         pYokeInterface->receptionEnable();
     }
 
-    // send data to yoke
-    pYokeInterface->sendData(dataToSend);
- 
     // return time value in seconds, after which the function will be called again
     return 0.01f;
 }
@@ -256,4 +155,111 @@ void setParameters(uint8_t* receiveBuffer)
     XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), *reinterpret_cast<float*>(receiveBuffer + 28));
     //XXX set transponder for test
     XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
+}
+
+// get simulator parameters and send them to yoke in report id 3 frame
+void getParameters(void)
+{
+    static uint8_t cnt = 0;
+    float fParameter;
+    int iParameter;
+
+    // buffer for data to be sent to yoke
+    static uint8_t dataToSend[HID_BUFFER_SIZE];
+
+    // byte 0 is the report ID
+    dataToSend[0] = REPORT_ID;
+
+    // byte 1 is the frame counter
+    dataToSend[1] = cnt++;
+
+    // byte 2 is the simulator boolean flag register
+    dataToSend[2] = 0;
+
+    // set 'is retractable' flag
+    if (XPLMGetDatai(pForceFeedbackData->getHandle("is_retractable")) != 0)
+    {
+        dataToSend[2] |= (1 << 0);
+    }
+
+    // byte 3 is gear deflection state (3 gears)
+    // every gear is coded in 2 bits: 0-fully up, 1-under way, 2-fully down, 3-not used
+    dataToSend[3] = 0;
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("nose_gear_deflection"));
+    if (fParameter == 1.0f)
+    {
+        dataToSend[3] |= (0x02 << 0);
+    }
+    else if (fParameter > 0.0f)
+    {
+        dataToSend[3] |= (0x01 << 0);
+    }
+
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("left_gear_deflection"));
+    if (fParameter == 1.0f)
+    {
+        dataToSend[3] |= (0x02 << 2);
+    }
+    else if (fParameter > 0.0f)
+    {
+        dataToSend[3] |= (0x01 << 2);
+    }
+
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("right_gear_deflection"));
+    if (fParameter == 1.0f)
+    {
+        dataToSend[3] |= (0x02 << 4);
+    }
+    else if (fParameter > 0.0f)
+    {
+        dataToSend[3] |= (0x01 << 4);
+    }
+
+    // bytes 4-7 is flaps deflection <0.0f .. 1.0f>
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("flaps_deflection"));
+    memcpy(dataToSend + 4, &fParameter, sizeof(fParameter));
+
+    // bytes 8-11 is total pitch control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_pitch"));
+    memcpy(dataToSend + 8, &fParameter, sizeof(fParameter));
+
+    // bytes 12-15 is total roll control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_roll"));
+    memcpy(dataToSend + 12, &fParameter, sizeof(fParameter));
+
+    // bytes 16-19 is total yaw control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("total_yaw"));
+    memcpy(dataToSend + 16, &fParameter, sizeof(fParameter));
+
+    // bytes 20-23 is throttle position of the handle itself - this controls all the handles at once <0.0f .. 1.0f>
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("throttle"));
+    memcpy(dataToSend + 20, &fParameter, sizeof(fParameter));
+
+    // bytes 24-27 is aircraft airspeed in relation to its Vno <0.0f .. 1.0f+> (may exceed 1.0f)
+    fParameter = XPLMGetDataf(pForceFeedbackData->getHandle("indicated_airspeed")) / XPLMGetDataf(pForceFeedbackData->getHandle("acf_vno"));
+    memcpy(dataToSend + 24, &fParameter, sizeof(fParameter));
+
+    if ((XPLMGetDatai(pForceFeedbackData->getHandle("stick_shaker")) != 0) &&
+        (XPLMGetDatai(pForceFeedbackData->getHandle("stall_warning")) != 0))
+    {
+        // this aircraft is equipped with a stick shaker and 
+        dataToSend[2] |= (1 << 1);
+    }
+
+    if (XPLMGetDatai(pForceFeedbackData->getHandle("reverser_deployed")) != 0)
+    {
+        // reverser is on
+        dataToSend[2] |= (1 << 2);
+    }
+
+    // bytes 28-31 is propeller speed in [rpm]; the higher value of first 2 engines is used
+    float propSpeed[2];
+    if (XPLMGetDatavf(pForceFeedbackData->getHandle("prop_speed"), propSpeed, 0, 2) == 2)
+    {
+        fParameter = propSpeed[0] > propSpeed[1] ? propSpeed[0] : propSpeed[1];
+        memcpy(dataToSend + 28, &fParameter, sizeof(fParameter));
+    }
+
+    // send data to yoke
+    pYokeInterface->sendData(dataToSend);
 }
