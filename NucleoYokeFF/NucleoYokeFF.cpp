@@ -163,7 +163,7 @@ void setParameters(uint8_t* receiveBuffer)
     XPLMSetDataf(pForceFeedbackData->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
     // set mixture from received bytes 24-27
     XPLMSetDataf(pForceFeedbackData->getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
-    // set throttle from received bytes 28-31
+    // set propeller from received bytes 28-31
     XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), *reinterpret_cast<float*>(receiveBuffer + 28));
     //XXX set transponder for test
     XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
