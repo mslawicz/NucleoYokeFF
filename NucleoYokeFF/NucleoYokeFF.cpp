@@ -18,6 +18,8 @@ YokeInterface* pYokeInterface = nullptr;
 
 // function declarations
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
+void registerParameters(void);
+void setParameters(uint8_t* receiveBuffer);
 
 PLUGIN_API int XPluginStart(
     char* outName,
@@ -33,44 +35,7 @@ PLUGIN_API int XPluginStart(
     strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin v2.0 for X-Plane");
 
     // register simulator parameters
-    // int/bool are there any retracted gears?
-    pForceFeedbackData->registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
-    // gear 1 deflection <0.0f .. 1.0f>
-    pForceFeedbackData->registerParameter("nose_gear_deflection", "sim/flightmodel/movingparts/gear1def");
-    // gear 2 deflection <0.0f .. 1.0f>
-    pForceFeedbackData->registerParameter("left_gear_deflection", "sim/flightmodel/movingparts/gear2def");
-    // gear 3 deflection <0.0f .. 1.0f>
-    pForceFeedbackData->registerParameter("right_gear_deflection", "sim/flightmodel/movingparts/gear3def");
-	// deflection of flaps <0.0f .. 1.0f>
-	pForceFeedbackData->registerParameter("flaps_deflection", "sim/flightmodel/controls/flaprat");
-	// Total pitch control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	pForceFeedbackData->registerParameter("total_pitch", "sim/cockpit2/controls/total_pitch_ratio");
-	// Total roll control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	pForceFeedbackData->registerParameter("total_roll", "sim/cockpit2/controls/total_roll_ratio");
-	// Total yaw control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
-	pForceFeedbackData->registerParameter("total_yaw", "sim/cockpit2/controls/total_heading_ratio");
-	// Throttle position of the handle itself - this controls all the handles at once. <0.0f .. 1.0f>
-	pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
-	// Maximum structural cruising speed or maximum speed for normal operations [kias]
-	pForceFeedbackData->registerParameter("acf_vno", "sim/aircraft/view/acf_Vno");
-	// Air speed indicated - this takes into account air density and wind direction [kias]
-	pForceFeedbackData->registerParameter("indicated_airspeed", "sim/flightmodel/position/indicated_airspeed");
-	// stick shaker available?
-	pForceFeedbackData->registerParameter("stick_shaker", "sim/aircraft/forcefeedback/acf_ff_stickshaker");
-	// stall warning on?
-	pForceFeedbackData->registerParameter("stall_warning", "sim/cockpit2/annunciators/stall_warning");
-	// reverserser on (one bit for each engine)
-	pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
-    // Prop speed float array for max 8 engines [rpm]
-    pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
-    // Throttle position of the handle itself - this controls all the handles at once
-    pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
-    // Mixture handle position, this controls all at once
-    pForceFeedbackData->registerParameter("mixture", "sim/cockpit2/engine/actuators/mixture_ratio_all");
-    // Prop handle position, in ratio. This controls all handles at once. NOTE: This is also used for helicopter collective!
-    pForceFeedbackData->registerParameter("propeller", "sim/cockpit2/engine/actuators/prop_ratio_all");
-    // XXX transponder for test purposes
-    pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
+    registerParameters();
 
     return (int)pForceFeedbackData->registrationSucceeded();
 }
@@ -224,17 +189,8 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     // check if data from Nucleo Yoke has been received
     if (pYokeInterface->isDataReceived())
     {
-        // data is received
-        auto receiveBuffer = pYokeInterface->getRecieveBuffer();
-        // set throttle from received bytes 20-23
-        XPLMSetDataf(pForceFeedbackData->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
-        // set mixture from received bytes 24-27
-        XPLMSetDataf(pForceFeedbackData->getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
-        // set throttle from received bytes 28-31
-        XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), *reinterpret_cast<float*>(receiveBuffer + 28));
-        //XXX set transponder for test
-        XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
-
+        // data is received - set simulator parameters
+        setParameters(pYokeInterface->getRecieveBuffer());
         // enable next reception from the yoke
         pYokeInterface->receptionEnable();
     }
@@ -244,4 +200,60 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
  
     // return time value in seconds, after which the function will be called again
     return 0.01f;
+}
+
+// register simulator parameters
+void registerParameters(void)
+{
+    // int/bool are there any retracted gears?
+    pForceFeedbackData->registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
+    // gear 1 deflection <0.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("nose_gear_deflection", "sim/flightmodel/movingparts/gear1def");
+    // gear 2 deflection <0.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("left_gear_deflection", "sim/flightmodel/movingparts/gear2def");
+    // gear 3 deflection <0.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("right_gear_deflection", "sim/flightmodel/movingparts/gear3def");
+    // deflection of flaps <0.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("flaps_deflection", "sim/flightmodel/controls/flaprat");
+    // Total pitch control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("total_pitch", "sim/cockpit2/controls/total_pitch_ratio");
+    // Total roll control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("total_roll", "sim/cockpit2/controls/total_roll_ratio");
+    // Total yaw control input (sum of user yoke plus autopilot servo plus artificial stability) <-1.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("total_yaw", "sim/cockpit2/controls/total_heading_ratio");
+    // Throttle position of the handle itself - this controls all the handles at once. <0.0f .. 1.0f>
+    pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
+    // Maximum structural cruising speed or maximum speed for normal operations [kias]
+    pForceFeedbackData->registerParameter("acf_vno", "sim/aircraft/view/acf_Vno");
+    // Air speed indicated - this takes into account air density and wind direction [kias]
+    pForceFeedbackData->registerParameter("indicated_airspeed", "sim/flightmodel/position/indicated_airspeed");
+    // stick shaker available?
+    pForceFeedbackData->registerParameter("stick_shaker", "sim/aircraft/forcefeedback/acf_ff_stickshaker");
+    // stall warning on?
+    pForceFeedbackData->registerParameter("stall_warning", "sim/cockpit2/annunciators/stall_warning");
+    // reverserser on (one bit for each engine)
+    pForceFeedbackData->registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
+    // Prop speed float array for max 8 engines [rpm]
+    pForceFeedbackData->registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
+    // Throttle position of the handle itself - this controls all the handles at once
+    pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
+    // Mixture handle position, this controls all at once
+    pForceFeedbackData->registerParameter("mixture", "sim/cockpit2/engine/actuators/mixture_ratio_all");
+    // Prop handle position, in ratio. This controls all handles at once. NOTE: This is also used for helicopter collective!
+    pForceFeedbackData->registerParameter("propeller", "sim/cockpit2/engine/actuators/prop_ratio_all");
+    // XXX transponder for test purposes
+    pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
+}
+
+// set simulator parameters according to received data
+void setParameters(uint8_t* receiveBuffer)
+{
+    // set throttle from received bytes 20-23
+    XPLMSetDataf(pForceFeedbackData->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
+    // set mixture from received bytes 24-27
+    XPLMSetDataf(pForceFeedbackData->getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
+    // set throttle from received bytes 28-31
+    XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), *reinterpret_cast<float*>(receiveBuffer + 28));
+    //XXX set transponder for test
+    XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
 }
