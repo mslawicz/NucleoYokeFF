@@ -170,13 +170,11 @@
     <ClCompile Include="FlightDataCollector.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NucleoYokeFF.cpp" />
-    <ClCompile Include="SimulatorParameters.cpp" />
     <ClCompile Include="YokeInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FlightDataCollector.h" />
     <ClInclude Include="Logger.h" />
-    <ClInclude Include="SimulatorParameters.h" />
     <ClInclude Include="YokeInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
