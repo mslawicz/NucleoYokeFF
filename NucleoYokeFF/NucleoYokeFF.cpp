@@ -144,8 +144,12 @@ void registerParameters(void)
     pForceFeedbackData->registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
     // Mixture handle position, this controls all at once
     pForceFeedbackData->registerParameter("mixture", "sim/cockpit2/engine/actuators/mixture_ratio_all");
-    // Prop handle position, in ratio. This controls all handles at once. NOTE: This is also used for helicopter collective!
-    pForceFeedbackData->registerParameter("propeller", "sim/cockpit2/engine/actuators/prop_ratio_all");
+    // Prop handle position, this controls all props at once.
+    pForceFeedbackData->registerParameter("propeller", "sim/cockpit2/engine/actuators/prop_rotation_speed_rad_sec_all");
+    // Minimum prop speed with governor on, radians/second
+    pForceFeedbackData->registerParameter("prop_min", "sim/aircraft/controls/acf_RSC_mingov_prp");
+    // Max prop speed radians/second
+    pForceFeedbackData->registerParameter("prop_max", "sim/aircraft/controls/acf_RSC_redline_prp");
     // XXX transponder for test purposes
     pForceFeedbackData->registerParameter("transponder", "sim/cockpit/radios/transponder_code");
 }
@@ -164,7 +168,10 @@ void setParameters(uint8_t* receiveBuffer)
     // set mixture from received bytes 24-27
     XPLMSetDataf(pForceFeedbackData->getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
     // set propeller from received bytes 28-31
-    XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), *reinterpret_cast<float*>(receiveBuffer + 28));
+    float propellerMin = XPLMGetDataf(pForceFeedbackData->getHandle("prop_min"));
+    float propellerMax = XPLMGetDataf(pForceFeedbackData->getHandle("prop_max"));
+    float propellerRotationSpeed = propellerMin + (*reinterpret_cast<float*>(receiveBuffer + 28)) * (propellerMax - propellerMin);
+    XPLMSetDataf(pForceFeedbackData->getHandle("propeller"), propellerRotationSpeed);
     //XXX set transponder for test
     XPLMSetDatai(pForceFeedbackData->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
 }
