@@ -16,10 +16,11 @@ class FlightDataCollector
 {
 public:
     FlightDataCollector(void);
-    void registerParameter(std::string parameterNickname, std::string parameterName);
     bool registrationSucceeded(void) const { return success; }
     XPLMDataRef getHandle(std::string parameterNickname) const;
+    void registerParameters(void);
 private:
+    void registerParameter(std::string parameterNickname, std::string parameterName);
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
     bool success;
 };
