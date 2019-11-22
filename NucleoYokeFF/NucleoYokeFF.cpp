@@ -20,7 +20,6 @@ uint8_t dataToSend[HID_BUFFER_SIZE];
 
 // function declarations
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
-void setParameters(uint8_t* receiveBuffer);
 
 PLUGIN_API int XPluginStart(
     char* outName,
@@ -94,7 +93,7 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     if (pYokeInterface->isDataReceived())
     {
         // data is received - set simulator parameters
-        setParameters(pYokeInterface->getRecieveBuffer());
+        pXPlaneParameters->setParameters(pYokeInterface->getRecieveBuffer());
         // enable next reception from the yoke
         pYokeInterface->receptionEnable();
     }
@@ -104,25 +103,4 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
 }
 
 
-// set simulator parameters according to received data
-void setParameters(uint8_t* receiveBuffer)
-{
-    // set yoke pitch from received bytes 8-11
-    XPLMSetDataf(pXPlaneParameters->getHandle("yoke_pitch"), *reinterpret_cast<float*>(receiveBuffer + 8));
-    // set yoke roll from received bytes 12-15
-    XPLMSetDataf(pXPlaneParameters->getHandle("yoke_roll"), *reinterpret_cast<float*>(receiveBuffer + 12));
-    // set 'pedals' deflection from received bytes 16-19
-    XPLMSetDataf(pXPlaneParameters->getHandle("yoke_heading"), *reinterpret_cast<float*>(receiveBuffer + 16));
-    // set throttle from received bytes 20-23
-    XPLMSetDataf(pXPlaneParameters->getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
-    // set mixture from received bytes 24-27
-    XPLMSetDataf(pXPlaneParameters->getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
-    // set propeller from received bytes 28-31
-    float propellerMin = XPLMGetDataf(pXPlaneParameters->getHandle("prop_min"));
-    float propellerMax = XPLMGetDataf(pXPlaneParameters->getHandle("prop_max"));
-    float propellerRotationSpeed = propellerMin + (*reinterpret_cast<float*>(receiveBuffer + 28)) * (propellerMax - propellerMin);
-    XPLMSetDataf(pXPlaneParameters->getHandle("propeller"), propellerRotationSpeed);
-    //XXX set transponder for test
-    XPLMSetDatai(pXPlaneParameters->getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
-}
 

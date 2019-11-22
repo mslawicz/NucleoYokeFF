@@ -20,6 +20,7 @@ public:
     XPLMDataRef getHandle(std::string parameterNickname) const;
     void registerParameters(void);
     void getParameters(uint8_t* dataToSend);
+    void setParameters(uint8_t* receiveBuffer);
 private:
     void registerParameter(std::string parameterNickname, std::string parameterName);
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;

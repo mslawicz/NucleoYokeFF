@@ -204,4 +204,28 @@ void FlightDataCollector::getParameters(uint8_t* dataToSend)
     }
 }
 
+/*
+set simulator parameters from received data from yoke
+*/
+void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
+{
+    // set yoke pitch from received bytes 8-11
+    XPLMSetDataf(getHandle("yoke_pitch"), *reinterpret_cast<float*>(receiveBuffer + 8));
+    // set yoke roll from received bytes 12-15
+    XPLMSetDataf(getHandle("yoke_roll"), *reinterpret_cast<float*>(receiveBuffer + 12));
+    // set 'pedals' deflection from received bytes 16-19
+    XPLMSetDataf(getHandle("yoke_heading"), *reinterpret_cast<float*>(receiveBuffer + 16));
+    // set throttle from received bytes 20-23
+    XPLMSetDataf(getHandle("throttle"), *reinterpret_cast<float*>(receiveBuffer + 20));
+    // set mixture from received bytes 24-27
+    XPLMSetDataf(getHandle("mixture"), *reinterpret_cast<float*>(receiveBuffer + 24));
+    // set propeller from received bytes 28-31
+    float propellerMin = XPLMGetDataf(getHandle("prop_min"));
+    float propellerMax = XPLMGetDataf(getHandle("prop_max"));
+    float propellerRotationSpeed = propellerMin + (*reinterpret_cast<float*>(receiveBuffer + 28))* (propellerMax - propellerMin);
+    XPLMSetDataf(getHandle("propeller"), propellerRotationSpeed);
+    //XXX set transponder for test
+    XPLMSetDatai(getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
+}
+
 
