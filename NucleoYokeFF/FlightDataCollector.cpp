@@ -96,8 +96,10 @@ void FlightDataCollector::registerParameters(void)
     registerParameter("prop_min", "sim/aircraft/controls/acf_RSC_mingov_prp");
     // Max prop speed radians/second
     registerParameter("prop_max", "sim/aircraft/controls/acf_RSC_redline_prp");
-    // XXX transponder for test purposes
-    registerParameter("transponder", "sim/cockpit/radios/transponder_code");
+    // flap detents
+    registerParameter("flap_detents", "sim/aircraft/controls/acf_flap_detents");
+    // requested flap ratio
+    registerParameter("flap_request", "sim/flightmodel/controls/flaprqst");
 }
 
 
@@ -224,8 +226,41 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
     float propellerMax = XPLMGetDataf(getHandle("prop_max"));
     float propellerRotationSpeed = propellerMin + (*reinterpret_cast<float*>(receiveBuffer + 28))* (propellerMax - propellerMin);
     XPLMSetDataf(getHandle("propeller"), propellerRotationSpeed);
-    //XXX set transponder for test
-    XPLMSetDatai(getHandle("transponder"), ((*reinterpret_cast<int*>(receiveBuffer + 4)) & 0xFF) + 2000);
+
+    // execute bitfield actions
+    uint32_t bitfield = *reinterpret_cast<uint32_t*>(receiveBuffer + 4);
+
+    if (bitfield & (1 << 0))
+    {
+        // flaps up
+        int flapDetents = XPLMGetDatai(getHandle("flap_detents"));
+        float flapRequest = XPLMGetDataf(getHandle("flap_request"));
+        if ((flapRequest > 0.0f) && (flapDetents > 0))
+        {
+            flapRequest -= 1.0f / flapDetents;
+            if (flapRequest < 0.01f)
+            {
+                flapRequest = 0.0f;
+            }
+            XPLMSetDataf(getHandle("flap_request"), flapRequest);
+        }
+    }
+
+    if (bitfield & (1 << 1))
+    {
+        // flaps down
+        int flapDetents = XPLMGetDatai(getHandle("flap_detents"));
+        float flapRequest = XPLMGetDataf(getHandle("flap_request"));
+        if ((flapRequest < 1.0f) && (flapDetents > 0))
+        {
+            flapRequest += 1.0f / flapDetents;
+            if (flapRequest > 0.99f)
+            {
+                flapRequest = 1.0f;
+            }
+            XPLMSetDataf(getHandle("flap_request"), flapRequest);
+        }
+    }
 }
 
 
