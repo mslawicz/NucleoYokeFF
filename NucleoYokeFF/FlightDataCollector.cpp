@@ -100,6 +100,10 @@ void FlightDataCollector::registerParameters(void)
     registerParameter("flap_detents", "sim/aircraft/controls/acf_flap_detents");
     // requested flap ratio
     registerParameter("flap_request", "sim/flightmodel/controls/flaprqst");
+    // Elevator trim, in part of MAX FLIGHT CONTROL DEFLECTION
+    registerParameter("elevator_trim", "sim/cockpit2/controls/elevator_trim");
+    // Gear handle position. 0 is up. 1 is down
+    registerParameter("gear", "sim/cockpit2/controls/gear_handle_down");
 }
 
 
@@ -211,6 +215,7 @@ set simulator parameters from received data from yoke
 */
 void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
 {
+    const float ElevatorTrimStep = 0.01f;
     // set yoke pitch from received bytes 8-11
     XPLMSetDataf(getHandle("yoke_pitch"), *reinterpret_cast<float*>(receiveBuffer + 8));
     // set yoke roll from received bytes 12-15
@@ -260,6 +265,32 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
             }
             XPLMSetDataf(getHandle("flap_request"), flapRequest);
         }
+    }
+
+    if (bitfield & (1 << 2))
+    {
+        // gear up
+        XPLMSetDatai(getHandle("gear"), 0);
+    }
+
+    if (bitfield & (1 << 3))
+    {
+        // gear down
+        XPLMSetDatai(getHandle("gear"), 1);
+    }
+
+    if (bitfield & (1 << 4))
+    {
+        // elevator trim up
+        float elevatorTrim = XPLMGetDataf(getHandle("elevator_trim")) + ElevatorTrimStep;
+        XPLMSetDataf(getHandle("elevator_trim"), elevatorTrim > 1.0f ? 1.0f : elevatorTrim);
+    }
+
+    if (bitfield & (1 << 5))
+    {
+        // elevator trim down
+        float elevatorTrim = XPLMGetDataf(getHandle("elevator_trim")) - ElevatorTrimStep;
+        XPLMSetDataf(getHandle("elevator_trim"), elevatorTrim < -1.0f ? -1.0f : elevatorTrim);
     }
 }
 
