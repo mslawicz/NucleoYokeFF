@@ -104,6 +104,10 @@ void FlightDataCollector::registerParameters(void)
     registerParameter("elevator_trim", "sim/cockpit2/controls/elevator_trim");
     // Gear handle position. 0 is up. 1 is down
     registerParameter("gear", "sim/cockpit2/controls/gear_handle_down");
+    // Position of pilot's head heading
+    registerParameter("head_yaw", "sim/graphics/view/pilots_head_psi");
+    // Position of pilot's head pitch
+    registerParameter("head_pitch", "sim/graphics/view/pilots_head_the");
 }
 
 
@@ -213,7 +217,7 @@ void FlightDataCollector::getParameters(uint8_t* dataToSend)
 /*
 set simulator parameters from received data from yoke
 */
-void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
+void FlightDataCollector::setParameters(uint8_t* receiveBuffer, float timeElapsed)
 {
     const float ElevatorTrimStep = 0.01f;
     // set yoke pitch from received bytes 8-11
@@ -292,6 +296,54 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer)
         float elevatorTrim = XPLMGetDataf(getHandle("elevator_trim")) - ElevatorTrimStep;
         XPLMSetDataf(getHandle("elevator_trim"), elevatorTrim < -1.0f ? -1.0f : elevatorTrim);
     }
+
+    int hatSignal = 0;
+    if (bitfield & (1 << 10))
+    {
+        // hat middle button switched
+        hatSignal = 3;
+    }
+    else if (!(bitfield & (1 << 6)))
+    {
+        // hat switch up
+        hatSignal = 1;
+    }
+    else if (!(bitfield & (1 << 7)))
+    {
+        // hat switch down
+        hatSignal = -1;
+    }
+    float angle = pilotHeadPitch.getAngle(hatSignal, timeElapsed);
+    XPLMSetDataf(getHandle("head_pitch"), angle);
+
+    hatSignal = 0;
+    if (bitfield & (1 << 10))
+    {
+        // hat middle button switched
+        hatSignal = 3;
+    }
+    else if (bitfield & (1 << 11))
+    {
+        // hat double switch right
+        hatSignal = 2;
+    }
+    else if (bitfield & (1 << 12))
+    {
+        // hat double switch left
+        hatSignal = -2;
+    }
+    else if (!(bitfield & (1 << 8)))
+    {
+        // hat switch right
+        hatSignal = 1;
+    }
+    else if (!(bitfield & (1 << 9)))
+    {
+        // hat switch left
+        hatSignal = -1;
+    }
+    angle = pilotHeadYaw.getAngle(hatSignal, timeElapsed);
+    XPLMSetDataf(getHandle("head_yaw"), angle);
 }
 
 

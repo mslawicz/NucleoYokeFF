@@ -93,7 +93,7 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     if (pYokeInterface->isDataReceived())
     {
         // data is received - set simulator parameters
-        pXPlaneParameters->setParameters(pYokeInterface->getRecieveBuffer());
+        pXPlaneParameters->setParameters(pYokeInterface->getRecieveBuffer(), inElapsedSinceLastCall);
         // enable next reception from the yoke
         pYokeInterface->receptionEnable();
     }
