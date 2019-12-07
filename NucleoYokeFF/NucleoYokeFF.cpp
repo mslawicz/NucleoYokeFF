@@ -56,7 +56,7 @@ PLUGIN_API void	XPluginStop(void)
 PLUGIN_API int  XPluginEnable(void)
 {
     // open connection of the device with stated VID, PID and report_id
-    pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, REPORT_ID);
+    pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, 0);
     // initialize periodic callbacks
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_BeforeFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);

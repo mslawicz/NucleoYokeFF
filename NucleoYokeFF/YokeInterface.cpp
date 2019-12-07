@@ -103,9 +103,9 @@ bool YokeInterface::openConnection(USHORT VID, USHORT PID, uint8_t collection)
 
                         if ((attributes.VendorID == VID) &&
                             (attributes.ProductID == PID) &&
-                            (wcsstr(pDeviceInterfaceDetailData->DevicePath, collectionStr.c_str())))
+                            ((collection == 0) || wcsstr(pDeviceInterfaceDetailData->DevicePath, collectionStr.c_str())))
                         {
-                            // device with proper collection found
+                            // device with proper VID, PID and collection found (or collection == 0)
                             // Creates or opens a file or I/O device - this time for read/write operations in asynchronous mode
                             fileHandle = CreateFile(pDeviceInterfaceDetailData->DevicePath, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                 &securityAttributes, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
@@ -128,6 +128,12 @@ bool YokeInterface::openConnection(USHORT VID, USHORT PID, uint8_t collection)
         }
     }
     SetupDiDestroyDeviceInfoList(deviceInfoSet);
+
+    if (!isOpen)
+    {
+        Logger::logMessage("USB HID device with VID=" + std::to_string(VID) + " PID=" + std::to_string(PID) + " not found");
+    }
+
     return isOpen;
 }
 
