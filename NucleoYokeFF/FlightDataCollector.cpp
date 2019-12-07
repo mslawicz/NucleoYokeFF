@@ -120,19 +120,16 @@ void FlightDataCollector::getParameters(uint8_t* dataToSend)
     float fParameter;
     int iParameter;
 
-    // byte 0 is the report ID
-    dataToSend[0] = REPORT_ID;
+    // byte 0 is the frame counter
+    dataToSend[0] = cnt++;
 
-    // byte 1 is the frame counter
-    dataToSend[1] = cnt++;
-
-    // byte 2 is the simulator boolean flag register
-    dataToSend[2] = 0;
+    // bytes 1-2 is the simulator boolean flag register
+    dataToSend[1] = dataToSend[2] = 0;
 
     // set 'is retractable' flag
     if (XPLMGetDatai(getHandle("is_retractable")) != 0)
     {
-        dataToSend[2] |= (1 << 0);
+        dataToSend[1] |= (1 << 0);
     }
 
     // byte 3 is gear deflection state (3 gears)

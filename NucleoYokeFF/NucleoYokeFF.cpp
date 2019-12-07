@@ -56,7 +56,7 @@ PLUGIN_API void	XPluginStop(void)
 PLUGIN_API int  XPluginEnable(void)
 {
     // open connection of the device with stated VID, PID and report_id
-    pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, 0);
+    pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, REPORT_ID);
     // initialize periodic callbacks
     flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_BeforeFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
@@ -85,7 +85,9 @@ This function is called before per-frame X-Plane calculations; max every 10 ms
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
     // read dataref values and prepare send buffer
-    pXPlaneParameters->getParameters(dataToSend);
+    pXPlaneParameters->getParameters(dataToSend+1);
+    // byte 0 is the report ID; it is not being sent if ==0
+    dataToSend[0] = REPORT_ID;
     // send data to yoke
     pYokeInterface->sendData(dataToSend);
 
@@ -93,7 +95,8 @@ float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceL
     if (pYokeInterface->isDataReceived())
     {
         // data is received - set simulator parameters
-        pXPlaneParameters->setParameters(pYokeInterface->getRecieveBuffer(), inElapsedSinceLastCall);
+        // receive buffer is offset by 1 because of report id == 0 in the first position
+        pXPlaneParameters->setParameters(pYokeInterface->getRecieveBuffer() + 1, inElapsedSinceLastCall);
         // enable next reception from the yoke
         pYokeInterface->receptionEnable();
     }
