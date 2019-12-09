@@ -2,61 +2,48 @@
 
 ViewAngle::ViewAngle(void)
 {
-    currentAngle = 0.0f;
-    requestedAngle = 0.0f;
+    filteredInput = 0.0f;
+    resetRequest = false;
 }
 
 /*
-* get angle of pilot's view
-    input:
-    -2 set -90 degrees
-    -1 decrease angle (left / down)
-    0
-    1 increase angle (right / up)
-    2 set +90 degrees
-    3 set 0 degrees
-    timeElapsed: time elapsed since the last call in seconds
-    returns view angle in degrees
+* get the angle change value
 */
-float ViewAngle::getAngle(int movement, float timeElapsed)
+float ViewAngle::getNewAngle(float currentAngle, float input, float timeElapsed)
 {
-    switch (movement)
+    // EMA filter strength should depend on the time elapsed (to preserve real time filtering effect)
+    float alpha = SpeedFactor * timeElapsed;
+    // don't allow alpha > 1 (can happen when time elapsed is huge)
+    if (alpha > 1.0f)
     {
-    case -1:
-        requestedAngle -= timeElapsed * AngleChangeRate;
-        if (requestedAngle > 180.0f)
-        {
-            requestedAngle = 180.0f;
-        }
-        break;
-    case 1:
-        requestedAngle += timeElapsed * AngleChangeRate;
-        if (requestedAngle < -180.0f)
-        {
-            requestedAngle = -180.0f;
-        }
-        break;
-    case -2:
-        requestedAngle = -90.0f;
-        break;
-    case 2:
-        requestedAngle = 90.0f;
-        break;
-    case 3:
-        requestedAngle = 0.0f;
-        break;
-    case 0:
-    default:
-        break;
+        alpha = 1.0f;
     }
-    currentAngle += (requestedAngle - currentAngle) * timeElapsed * SpeedFactor;
-    if (currentAngle > 180.0f)
+    // if reset signal is active, calculate virtual input
+    if (resetRequest)
     {
-        currentAngle = 180.0f;
+        input = currentAngle / resetAngleThreshold;
+        if (input > 1.0f)
+        {
+            input = 1.0f;
+        }
+        else if (input < -1.0f)
+        {
+            input = -1.0f;
+        }
     }
-    else if (currentAngle < -180.0f)
+    // filter input signal
+    filteredInput += alpha * (input - filteredInput);
+    // calculate new angle
+    currentAngle += filteredInput * AngleChangeRate * timeElapsed;
+    // check if reset condition is achieved
+    if (resetRequest &&
+        (currentAngle > -0.5f) &&
+        (currentAngle < 0.5f))
     {
-        currentAngle = -180.0f;
+        //reset view and filter
+        currentAngle = 0.0f;
+        filteredInput = 0.0f;
+        resetRequest = false;
     }
     return currentAngle;
 }

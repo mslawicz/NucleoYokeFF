@@ -26,7 +26,7 @@ private:
     void registerParameter(std::string parameterNickname, std::string parameterName);
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
     bool success;
-    ViewAngle pilotHeadYaw;
-    ViewAngle pilotHeadPitch;
+    ViewAngle pilotViewYaw;
+    ViewAngle pilotViewPitch;
 };
 

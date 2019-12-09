@@ -118,7 +118,6 @@ void FlightDataCollector::getParameters(uint8_t* dataToSend)
 {
     static uint8_t cnt = 0;
     float fParameter;
-    int iParameter;
 
     // byte 0 is the frame counter
     dataToSend[0] = cnt++;
@@ -282,65 +281,18 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer, float timeElapse
 
     if (bitfield & (1 << 4))
     {
-        // elevator trim up
-        float elevatorTrim = XPLMGetDataf(getHandle("elevator_trim")) + ElevatorTrimStep;
-        XPLMSetDataf(getHandle("elevator_trim"), elevatorTrim > 1.0f ? 1.0f : elevatorTrim);
+        // pilot's view reset
+        pilotViewYaw.resetView();
+        pilotViewPitch.resetView();
     }
 
-    if (bitfield & (1 << 5))
-    {
-        // elevator trim down
-        float elevatorTrim = XPLMGetDataf(getHandle("elevator_trim")) - ElevatorTrimStep;
-        XPLMSetDataf(getHandle("elevator_trim"), elevatorTrim < -1.0f ? -1.0f : elevatorTrim);
-    }
-
-    int hatSignal = 0;
-    if (bitfield & (1 << 10))
-    {
-        // hat middle button switched
-        hatSignal = 3;
-    }
-    else if (!(bitfield & (1 << 6)))
-    {
-        // hat switch up
-        hatSignal = 1;
-    }
-    else if (!(bitfield & (1 << 7)))
-    {
-        // hat switch down
-        hatSignal = -1;
-    }
-    float angle = pilotHeadPitch.getAngle(hatSignal, timeElapsed);
-    XPLMSetDataf(getHandle("head_pitch"), angle);
-
-    hatSignal = 0;
-    if (bitfield & (1 << 10))
-    {
-        // hat middle button switched
-        hatSignal = 3;
-    }
-    else if (bitfield & (1 << 11))
-    {
-        // hat double switch right
-        hatSignal = 2;
-    }
-    else if (bitfield & (1 << 12))
-    {
-        // hat double switch left
-        hatSignal = -2;
-    }
-    else if (!(bitfield & (1 << 8)))
-    {
-        // hat switch right
-        hatSignal = 1;
-    }
-    else if (!(bitfield & (1 << 9)))
-    {
-        // hat switch left
-        hatSignal = -1;
-    }
-    angle = pilotHeadYaw.getAngle(hatSignal, timeElapsed);
+    float angle = XPLMGetDataf(getHandle("head_yaw"));
+    angle = pilotViewYaw.getNewAngle(angle, *reinterpret_cast<float*>(receiveBuffer + 36), timeElapsed);
     XPLMSetDataf(getHandle("head_yaw"), angle);
+
+    angle = XPLMGetDataf(getHandle("head_pitch"));
+    angle = pilotViewPitch.getNewAngle(angle, *reinterpret_cast<float*>(receiveBuffer + 32), timeElapsed);
+    XPLMSetDataf(getHandle("head_pitch"), angle);
 }
 
 
