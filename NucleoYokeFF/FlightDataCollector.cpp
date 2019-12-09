@@ -287,11 +287,11 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer, float timeElapse
     }
 
     float angle = XPLMGetDataf(getHandle("head_yaw"));
-    angle = pilotViewYaw.getNewAngle(angle, *reinterpret_cast<float*>(receiveBuffer + 36), timeElapsed);
+    angle = pilotViewYaw.getNewAngle(angle, -*reinterpret_cast<float*>(receiveBuffer + 32), timeElapsed);
     XPLMSetDataf(getHandle("head_yaw"), angle);
 
     angle = XPLMGetDataf(getHandle("head_pitch"));
-    angle = pilotViewPitch.getNewAngle(angle, *reinterpret_cast<float*>(receiveBuffer + 32), timeElapsed);
+    angle = pilotViewPitch.getNewAngle(angle, -*reinterpret_cast<float*>(receiveBuffer + 36), timeElapsed);
     XPLMSetDataf(getHandle("head_pitch"), angle);
 }
 

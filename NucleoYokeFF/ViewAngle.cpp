@@ -11,6 +11,11 @@ ViewAngle::ViewAngle(void)
 */
 float ViewAngle::getNewAngle(float currentAngle, float input, float timeElapsed)
 {
+    // do not operate on angles > 180
+    if (currentAngle > 180.0f)
+    {
+        currentAngle -= 360.0f;
+    }
     // EMA filter strength should depend on the time elapsed (to preserve real time filtering effect)
     float alpha = SpeedFactor * timeElapsed;
     // don't allow alpha > 1 (can happen when time elapsed is huge)
