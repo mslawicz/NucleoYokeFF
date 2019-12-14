@@ -102,6 +102,8 @@ void FlightDataCollector::registerParameters(void)
     registerParameter("flap_request", "sim/flightmodel/controls/flaprqst");
     // Elevator trim, in part of MAX FLIGHT CONTROL DEFLECTION
     registerParameter("elevator_trim", "sim/cockpit2/controls/elevator_trim");
+    // total time taken for the elevator trim to go from one extreme to the other [s]
+    registerParameter("elevator_trim_time", "sim/aircraft/controls/acf_elev_trim_time");
     // Gear handle position. 0 is up. 1 is down
     registerParameter("gear", "sim/cockpit2/controls/gear_handle_down");
     // Position of pilot's head heading
@@ -215,7 +217,6 @@ set simulator parameters from received data from yoke
 */
 void FlightDataCollector::setParameters(uint8_t* receiveBuffer, float timeElapsed)
 {
-    const float ElevatorTrimStep = 0.01f;
     // set yoke pitch from received bytes 8-11
     XPLMSetDataf(getHandle("yoke_pitch"), *reinterpret_cast<float*>(receiveBuffer + 8));
     // set yoke roll from received bytes 12-15
@@ -293,6 +294,32 @@ void FlightDataCollector::setParameters(uint8_t* receiveBuffer, float timeElapse
     angle = XPLMGetDataf(getHandle("head_pitch"));
     angle = pilotViewPitch.getNewAngle(angle, -*reinterpret_cast<float*>(receiveBuffer + 36), timeElapsed);
     XPLMSetDataf(getHandle("head_pitch"), angle);
+
+    //elevator trim up
+    if (bitfield & (1 << 5))
+    {
+        float trim = XPLMGetDataf(getHandle("elevator_trim"));
+        float trimTime = XPLMGetDataf(getHandle("elevator_trim_time"));
+        trim += timeElapsed / trimTime;
+        if (trim > 1.0f)
+        {
+            trim = 1.0f;
+        }
+        XPLMSetDataf(getHandle("elevator_trim"), trim);
+    }
+
+    //elevator trim down
+    if (bitfield & (1 << 6))
+    {
+        float trim = XPLMGetDataf(getHandle("elevator_trim"));
+        float trimTime = XPLMGetDataf(getHandle("elevator_trim_time"));
+        trim -= timeElapsed / trimTime;
+        if (trim < -1.0f)
+        {
+            trim = -1.0f;
+        }
+        XPLMSetDataf(getHandle("elevator_trim"), trim);
+    }
 }
 
 
