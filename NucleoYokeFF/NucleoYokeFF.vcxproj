@@ -70,8 +70,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\marci\source\repos\NucleoYokeFF\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\marci\source\repos\NucleoYokeFF\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
     <TargetName>$(MSBuildProjectName)</TargetName>
     <OutDir>.\Debug\plugins\$(MSBuildProjectName)\win_x64\</OutDir>
     <IntDir>.\Debug\win_x64\</IntDir>
@@ -79,8 +79,8 @@
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Marcin\source\repos\X-PlanePlugins\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\marci\source\repos\NucleoYokeFF\SDK\CHeaders\XPLM;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\marci\source\repos\NucleoYokeFF\SDK\Libraries\Win;$(LibraryPath)</LibraryPath>
     <TargetName>$(MSBuildProjectName)</TargetName>
     <OutDir>.\Release\plugins\$(MSBuildProjectName)\win_x64\</OutDir>
     <IntDir>.\Release\win_x64\</IntDir>
