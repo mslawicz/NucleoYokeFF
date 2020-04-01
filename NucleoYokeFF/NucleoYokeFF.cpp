@@ -85,7 +85,7 @@ This function is called after per-frame X-Plane calculations; max every 10 ms
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
     // read dataref values and prepare send buffer
-    pXPlaneParameters->getParameters(dataToSend+1);
+    pXPlaneParameters->getParameters(dataToSend);
     // byte 0 is the report ID; it is not being sent if ==0
     dataToSend[0] = REPORT_ID;
     // send data to yoke

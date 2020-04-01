@@ -121,9 +121,6 @@ void FlightDataCollector::getParameters(uint8_t* dataToSend)
     static uint8_t cnt = 0;
     float fParameter;
 
-    // byte 0 is the frame counter
-    dataToSend[0] = cnt++;
-
     // bytes 1-2 is the simulator boolean flag register
     dataToSend[1] = dataToSend[2] = 0;
 
