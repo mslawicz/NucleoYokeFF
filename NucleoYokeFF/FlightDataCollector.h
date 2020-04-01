@@ -2,7 +2,6 @@
 
 #include "XPLMProcessing.h"
 #include "XPLMDataAccess.h"
-#include "ViewAngle.h"
 #include <string>
 #include <unordered_map>
 
@@ -26,7 +25,5 @@ private:
     void registerParameter(std::string parameterNickname, std::string parameterName);
     std::unordered_map<std::string, SimulatorParameter> simulatorParameters;
     bool success;
-    ViewAngle pilotViewYaw;
-    ViewAngle pilotViewPitch;
 };
 
