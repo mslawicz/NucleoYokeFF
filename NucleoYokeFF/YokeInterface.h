@@ -6,9 +6,14 @@
 #include <hidsdi.h>
 
 #define VENDOR_ID   0x483
-#define PRODUCT_ID  0x5750  // custom HID
-#define REPORT_ID   0x00    // report id 0 leaves all 64 bytes for payload
+#define PRODUCT_ID  0x5711  // HID joystick
+#define REPORT_ID   0x02
 #define HID_BUFFER_SIZE    65   // report id and 64 bytes of payload
+#if REPORT_ID != 0
+#define HID_BUFFER_SIZE    64   // report id + 63 bytes of payload to be sent
+#else
+#define HID_BUFFER_SIZE    65   // report id (0) + 64 bytes of payload to be sent
+#endif
 
 
 class YokeInterface

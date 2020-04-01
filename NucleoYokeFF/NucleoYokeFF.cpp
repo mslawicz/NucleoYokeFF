@@ -32,7 +32,7 @@ PLUGIN_API int XPluginStart(
     // set plugin signature strings
     strcpy_s(outName, 0xFF, "Nucleo Yoke Force Feedback");
     strcpy_s(outSig, 0xFF, "ms.NucleoYokeFF");
-    strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin v2.0 for X-Plane");
+    strcpy_s(outDesc, 0xFF, "Nucleo Yoke Force Feedback plugin v4.0 for X-Plane");
 
     // register simulator parameters
     pXPlaneParameters->registerParameters();
@@ -58,7 +58,7 @@ PLUGIN_API int  XPluginEnable(void)
     // open connection of the device with stated VID, PID and report_id
     pYokeInterface->openConnection(VENDOR_ID, PRODUCT_ID, REPORT_ID);
     // initialize periodic callbacks
-    flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_BeforeFlightModel, FlightLoopCallback, nullptr };
+    flightLoopStructure = { sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel, FlightLoopCallback, nullptr };
     flightLoopID = XPLMCreateFlightLoop(&flightLoopStructure);
     XPLMScheduleFlightLoop(flightLoopID, 0.5f, 1);
     // enable reception of yoke data
@@ -80,7 +80,7 @@ PLUGIN_API void XPluginDisable(void)
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) { }
 
 /*
-This function is called before per-frame X-Plane calculations; max every 10 ms
+This function is called after per-frame X-Plane calculations; max every 10 ms
 */
 float FlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon)
 {
