@@ -50,12 +50,6 @@ XPLMDataRef FlightDataCollector::getHandle(std::string parameterNickname) const
 */
 void FlightDataCollector::registerParameters(void)
 {
-    // This is how much the user input has deflected the yoke in the cockpit, in ratio, where -1.0 is full down, and 1.0 is full up
-    registerParameter("yoke_pitch", "sim/cockpit2/controls/yoke_pitch_ratio");
-    // This is how much the user input has deflected the yoke in the cockpit, in ratio, where -1.0 is full left, and 1.0 is full right.
-    registerParameter("yoke_roll", "sim/cockpit2/controls/yoke_roll_ratio");
-    // This is how much the user input has deflected the rudder in the cockpit, in ratio, where -1.0 is full left, and 1.0 is full right
-    registerParameter("yoke_heading", "sim/cockpit2/controls/yoke_heading_ratio");
     // int/bool are there any retracted gears?
     registerParameter("is_retractable", "sim/aircraft/gear/acf_gear_retract");
     // gear 1 deflection <0.0f .. 1.0f>
@@ -86,30 +80,6 @@ void FlightDataCollector::registerParameters(void)
     registerParameter("reverser_deployed", "sim/cockpit2/annunciators/reverser_deployed");
     // Prop speed float array for max 8 engines [rpm]
     registerParameter("prop_speed", "sim/cockpit2/engine/indicators/prop_speed_rpm");
-    // Throttle position of the handle itself - this controls all the handles at once
-    registerParameter("throttle", "sim/cockpit2/engine/actuators/throttle_ratio_all");
-    // Mixture handle position, this controls all at once
-    registerParameter("mixture", "sim/cockpit2/engine/actuators/mixture_ratio_all");
-    // Prop handle position, this controls all props at once.
-    registerParameter("propeller", "sim/cockpit2/engine/actuators/prop_rotation_speed_rad_sec_all");
-    // Minimum prop speed with governor on, radians/second
-    registerParameter("prop_min", "sim/aircraft/controls/acf_RSC_mingov_prp");
-    // Max prop speed radians/second
-    registerParameter("prop_max", "sim/aircraft/controls/acf_RSC_redline_prp");
-    // flap detents
-    registerParameter("flap_detents", "sim/aircraft/controls/acf_flap_detents");
-    // requested flap ratio
-    registerParameter("flap_request", "sim/flightmodel/controls/flaprqst");
-    // Elevator trim, in part of MAX FLIGHT CONTROL DEFLECTION
-    registerParameter("elevator_trim", "sim/cockpit2/controls/elevator_trim");
-    // total time taken for the elevator trim to go from one extreme to the other [s]
-    registerParameter("elevator_trim_time", "sim/aircraft/controls/acf_elev_trim_time");
-    // Gear handle position. 0 is up. 1 is down
-    registerParameter("gear", "sim/cockpit2/controls/gear_handle_down");
-    // Position of pilot's head heading
-    registerParameter("head_yaw", "sim/graphics/view/pilots_head_psi");
-    // Position of pilot's head pitch
-    registerParameter("head_pitch", "sim/graphics/view/pilots_head_the");
 }
 
 
